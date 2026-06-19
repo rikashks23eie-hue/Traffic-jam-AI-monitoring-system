@@ -1,0 +1,199 @@
+{
+  "generatedAt": "2026-06-18T13:36:34.720Z",
+  "configUsed": {
+    "confidenceThreshold": 0.7,
+    "targetProcessingMs": 500
+  },
+  "aggregateMetrics": {
+    "macroPrecision": 0.8888888888888888,
+    "macroRecall": 0.8518518518518517,
+    "macroF1": 0.8666666666666667,
+    "mAP": 0.8666666666666667,
+    "totalTP": 19,
+    "totalFP": 1,
+    "totalFN": 2
+  },
+  "processingSpeed": {
+    "avgMs": 363,
+    "minMs": 258,
+    "maxMs": 498,
+    "p95Ms": 498
+  },
+  "perViolationType": [
+    {
+      "id": "HELMET_NON_COMPLIANCE",
+      "label": "Helmet Non-Compliance",
+      "tp": 4,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1,
+      "recall": 1,
+      "f1": 1,
+      "avgConf": 0.8675,
+      "avgTime": 408,
+      "support": 4,
+      "threshold": 0.7,
+      "meetsTarget": true,
+      "meetsSpeedTarget": true
+    },
+    {
+      "id": "TRIPLE_RIDING",
+      "label": "Triple Riding",
+      "tp": 2,
+      "fp": 0,
+      "fn": 1,
+      "precision": 1,
+      "recall": 0.6666666666666666,
+      "f1": 0.8,
+      "avgConf": 0.89,
+      "avgTime": 338.3333333333333,
+      "support": 3,
+      "threshold": 0.75,
+      "meetsTarget": true,
+      "meetsSpeedTarget": true
+    },
+    {
+      "id": "RED_LIGHT_VIOLATION",
+      "label": "Red Light Violation",
+      "tp": 3,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1,
+      "recall": 1,
+      "f1": 1,
+      "avgConf": 0.9233333333333333,
+      "avgTime": 377.6666666666667,
+      "support": 3,
+      "threshold": 0.8,
+      "meetsTarget": true,
+      "meetsSpeedTarget": true
+    },
+    {
+      "id": "SEATBELT_NON_COMPLIANCE",
+      "label": "Seatbelt Non-Compliance",
+      "tp": 3,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1,
+      "recall": 1,
+      "f1": 1,
+      "avgConf": 0.8533333333333334,
+      "avgTime": 390.6666666666667,
+      "support": 3,
+      "threshold": 0.72,
+      "meetsTarget": true,
+      "meetsSpeedTarget": true
+    },
+    {
+      "id": "MOBILE_PHONE_USAGE",
+      "label": "Mobile Phone Usage",
+      "tp": 2,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1,
+      "recall": 1,
+      "f1": 1,
+      "avgConf": 0.81,
+      "avgTime": 285.5,
+      "support": 2,
+      "threshold": 0.72,
+      "meetsTarget": true,
+      "meetsSpeedTarget": true
+    },
+    {
+      "id": "WRONG_SIDE_DRIVING",
+      "label": "Wrong-Side Driving",
+      "tp": 2,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1,
+      "recall": 1,
+      "f1": 1,
+      "avgConf": 0.83,
+      "avgTime": 418,
+      "support": 2,
+      "threshold": 0.78,
+      "meetsTarget": true,
+      "meetsSpeedTarget": true
+    },
+    {
+      "id": "STOP_LINE_VIOLATION",
+      "label": "Stop Line Violation",
+      "tp": 0,
+      "fp": 1,
+      "fn": 1,
+      "precision": 0,
+      "recall": 0,
+      "f1": 0,
+      "avgConf": 0.635,
+      "avgTime": 493.5,
+      "support": 1,
+      "threshold": 0.7,
+      "meetsTarget": false,
+      "meetsSpeedTarget": true
+    },
+    {
+      "id": "ILLEGAL_PARKING",
+      "label": "Illegal Parking",
+      "tp": 2,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1,
+      "recall": 1,
+      "f1": 1,
+      "avgConf": 0.84,
+      "avgTime": 262.5,
+      "support": 2,
+      "threshold": 0.7,
+      "meetsTarget": true,
+      "meetsSpeedTarget": true
+    },
+    {
+      "id": "OVERLOADED_VEHICLE",
+      "label": "Overloaded Vehicle",
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1,
+      "recall": 1,
+      "f1": 1,
+      "avgConf": 0.76,
+      "avgTime": 398,
+      "support": 1,
+      "threshold": 0.75,
+      "meetsTarget": true,
+      "meetsSpeedTarget": true
+    }
+  ],
+  "preprocessingAnalysis": {
+    "conditionCounts": {
+      "low_light": 6,
+      "rain": 3,
+      "motion_blur": 1,
+      "clear": 8,
+      "shadow": 2
+    },
+    "preprocessingTechniques": {
+      "histogram_equalization": 9,
+      "contrast_adjustment": 7,
+      "noise_reduction": 5,
+      "sharpening": 4,
+      "gamma_correction": 4,
+      "rain_dehazing": 1
+    },
+    "avgBrightness": "0.566",
+    "avgBlur": "0.196"
+  },
+  "testDatasetInfo": {
+    "totalSamples": 20,
+    "groundTruthSource": "data/ground-truth.json",
+    "annotationGuidelines": "docs/ANNOTATIONS.md"
+  },
+  "knownLimitations": [
+    "Simulated detection model — replace with YOLOv8 for production",
+    "Test set of 20 images — needs expansion to 200+ for robust evaluation",
+    "No GPU benchmarking performed",
+    "OCR not validated on real CCTV resolution",
+    "Red-light detection needs synchronized signal state integration"
+  ]
+}

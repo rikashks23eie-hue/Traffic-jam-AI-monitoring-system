@@ -1,0 +1,94 @@
+# Dependencies
+node_modules/
+npm-debug.log
+yarn-error.log
+package-lock.json
+yarn.lock
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Build output
+dist/
+build/
+coverage/
+
+# Temporary files
+uploads/
+*.log
+tmp/
+temp/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Docker
+docker-compose.override.yml
+.dockerignore
+
+# Testing
+.mocha
+.nyc_output
+coverage/
+
+# Database
+*.db
+*.sqlite
+mongo_data/
+
+# Security
+.pem
+.key
+*.pem
+*.key
+secrets/
+
+# Cache
+.cache/
+.eslintcache
+
+# Production
+.next/
+out/
+
+# Misc
+.venv/
+venv/
+__pycache__/
+*.pyc
+
+# Local development
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/settings.json
+.idea/workspace.xml
+
+# Keep these important files
+!.gitkeep
+!.env.example

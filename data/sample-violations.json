@@ -1,0 +1,422 @@
+[
+  {
+    "id": "SAMPLE-001",
+    "imageName": "silk_board_001.jpg",
+    "timestamp": "2026-06-01T08:15:00Z",
+    "location": "Silk Board Junction",
+    "preprocessingApplied": ["histogram_equalization", "contrast_adjustment"],
+    "imageQuality": { "brightness": 0.42, "blur": 0.18, "condition": "low_light" },
+    "groundTruth": {
+      "violations": ["HELMET_NON_COMPLIANCE"],
+      "licensePlate": "KA03AB1234",
+      "vehicleType": "Motorcycle",
+      "personCount": 1
+    },
+    "modelPrediction": {
+      "violations": ["HELMET_NON_COMPLIANCE"],
+      "licensePlate": "KA03AB1234",
+      "confidence": 0.91,
+      "processingTimeMs": 342
+    },
+    "evaluation": { "truePositive": true, "falsePositive": false, "falseNegative": false }
+  },
+  {
+    "id": "SAMPLE-002",
+    "imageName": "majestic_002.jpg",
+    "timestamp": "2026-06-01T09:22:00Z",
+    "location": "Majestic Junction",
+    "preprocessingApplied": ["noise_reduction", "sharpening"],
+    "imageQuality": { "brightness": 0.78, "blur": 0.09, "condition": "rain" },
+    "groundTruth": {
+      "violations": ["TRIPLE_RIDING"],
+      "licensePlate": "KA51MB8888",
+      "vehicleType": "Motorcycle",
+      "personCount": 3
+    },
+    "modelPrediction": {
+      "violations": ["TRIPLE_RIDING"],
+      "licensePlate": "KA51MB8888",
+      "confidence": 0.87,
+      "processingTimeMs": 289
+    },
+    "evaluation": { "truePositive": true, "falsePositive": false, "falseNegative": false }
+  },
+  {
+    "id": "SAMPLE-003",
+    "imageName": "hebbal_003.jpg",
+    "timestamp": "2026-06-01T10:45:00Z",
+    "location": "Hebbal Flyover",
+    "preprocessingApplied": ["gamma_correction", "histogram_equalization"],
+    "imageQuality": { "brightness": 0.35, "blur": 0.45, "condition": "motion_blur" },
+    "groundTruth": {
+      "violations": ["RED_LIGHT_VIOLATION"],
+      "licensePlate": "TN33AB9852",
+      "vehicleType": "Car",
+      "personCount": 1
+    },
+    "modelPrediction": {
+      "violations": ["RED_LIGHT_VIOLATION"],
+      "licensePlate": "TN33AB9852",
+      "confidence": 0.93,
+      "processingTimeMs": 410
+    },
+    "evaluation": { "truePositive": true, "falsePositive": false, "falseNegative": false }
+  },
+  {
+    "id": "SAMPLE-004",
+    "imageName": "mgroad_004.jpg",
+    "timestamp": "2026-06-01T11:00:00Z",
+    "location": "MG Road Junction",
+    "preprocessingApplied": ["contrast_adjustment"],
+    "imageQuality": { "brightness": 0.72, "blur": 0.12, "condition": "clear" },
+    "groundTruth": {
+      "violations": ["HELMET_NON_COMPLIANCE", "TRIPLE_RIDING"],
+      "licensePlate": "KA01CD5678",
+      "vehicleType": "Motorcycle",
+      "personCount": 3
+    },
+    "modelPrediction": {
+      "violations": ["HELMET_NON_COMPLIANCE"],
+      "licensePlate": "KA01CD5678",
+      "confidence": 0.89,
+      "processingTimeMs": 378
+    },
+    "evaluation": { "truePositive": true, "falsePositive": false, "falseNegative": true }
+  },
+  {
+    "id": "SAMPLE-005",
+    "imageName": "indiranagar_005.jpg",
+    "timestamp": "2026-06-01T12:30:00Z",
+    "location": "Indiranagar 100ft Road",
+    "preprocessingApplied": ["histogram_equalization"],
+    "imageQuality": { "brightness": 0.69, "blur": 0.08, "condition": "clear" },
+    "groundTruth": {
+      "violations": ["MOBILE_PHONE_USAGE"],
+      "licensePlate": "KA05EF9012",
+      "vehicleType": "Car",
+      "personCount": 1
+    },
+    "modelPrediction": {
+      "violations": ["MOBILE_PHONE_USAGE"],
+      "licensePlate": "KA05EF9012",
+      "confidence": 0.78,
+      "processingTimeMs": 295
+    },
+    "evaluation": { "truePositive": true, "falsePositive": false, "falseNegative": false }
+  },
+  {
+    "id": "SAMPLE-006",
+    "imageName": "whitefield_006.jpg",
+    "timestamp": "2026-06-01T14:10:00Z",
+    "location": "Whitefield Main Road",
+    "preprocessingApplied": ["noise_reduction"],
+    "imageQuality": { "brightness": 0.61, "blur": 0.22, "condition": "shadow" },
+    "groundTruth": {
+      "violations": [],
+      "licensePlate": "KA03HA2903",
+      "vehicleType": "Motorcycle",
+      "personCount": 1
+    },
+    "modelPrediction": {
+      "violations": ["HELMET_NON_COMPLIANCE"],
+      "licensePlate": "KA03HA2903",
+      "confidence": 0.64,
+      "processingTimeMs": 312
+    },
+    "evaluation": { "truePositive": false, "falsePositive": true, "falseNegative": false }
+  },
+  {
+    "id": "SAMPLE-007",
+    "imageName": "ecity_007.jpg",
+    "timestamp": "2026-06-01T15:45:00Z",
+    "location": "Electronic City Toll",
+    "preprocessingApplied": ["histogram_equalization", "gamma_correction"],
+    "imageQuality": { "brightness": 0.38, "blur": 0.31, "condition": "low_light" },
+    "groundTruth": {
+      "violations": ["SEATBELT_NON_COMPLIANCE"],
+      "licensePlate": "KA03AB1234",
+      "vehicleType": "Car",
+      "personCount": 1
+    },
+    "modelPrediction": {
+      "violations": ["SEATBELT_NON_COMPLIANCE"],
+      "licensePlate": "KA03AB1234",
+      "confidence": 0.82,
+      "processingTimeMs": 425
+    },
+    "evaluation": { "truePositive": true, "falsePositive": false, "falseNegative": false }
+  },
+  {
+    "id": "SAMPLE-008",
+    "imageName": "yeshwanthpur_008.jpg",
+    "timestamp": "2026-06-01T17:20:00Z",
+    "location": "Yeshwanthpur Circle",
+    "preprocessingApplied": ["contrast_adjustment", "noise_reduction"],
+    "imageQuality": { "brightness": 0.55, "blur": 0.15, "condition": "clear" },
+    "groundTruth": {
+      "violations": ["WRONG_SIDE_DRIVING"],
+      "licensePlate": "TN01AB1234",
+      "vehicleType": "Car",
+      "personCount": 1
+    },
+    "modelPrediction": {
+      "violations": ["WRONG_SIDE_DRIVING"],
+      "licensePlate": "TN01AB1234",
+      "confidence": 0.94,
+      "processingTimeMs": 338
+    },
+    "evaluation": { "truePositive": true, "falsePositive": false, "falseNegative": false }
+  },
+  {
+    "id": "SAMPLE-009",
+    "imageName": "krpuram_009.jpg",
+    "timestamp": "2026-06-01T18:00:00Z",
+    "location": "KR Puram Bridge",
+    "preprocessingApplied": ["histogram_equalization"],
+    "imageQuality": { "brightness": 0.44, "blur": 0.25, "condition": "low_light" },
+    "groundTruth": {
+      "violations": ["ILLEGAL_PARKING"],
+      "licensePlate": "KA51MB8888",
+      "vehicleType": "Car",
+      "personCount": 0
+    },
+    "modelPrediction": {
+      "violations": ["ILLEGAL_PARKING"],
+      "licensePlate": "KA51MB8888",
+      "confidence": 0.85,
+      "processingTimeMs": 267
+    },
+    "evaluation": { "truePositive": true, "falsePositive": false, "falseNegative": false }
+  },
+  {
+    "id": "SAMPLE-010",
+    "imageName": "kanakapura_010.jpg",
+    "timestamp": "2026-06-02T07:30:00Z",
+    "location": "Kanakapura Road",
+    "preprocessingApplied": ["sharpening"],
+    "imageQuality": { "brightness": 0.82, "blur": 0.07, "condition": "clear" },
+    "groundTruth": {
+      "violations": ["OVERLOADED_VEHICLE"],
+      "licensePlate": "KA03HA2903",
+      "vehicleType": "Truck",
+      "personCount": 1
+    },
+    "modelPrediction": {
+      "violations": ["OVERLOADED_VEHICLE"],
+      "licensePlate": "KA03HA2903",
+      "confidence": 0.76,
+      "processingTimeMs": 398
+    },
+    "evaluation": { "truePositive": true, "falsePositive": false, "falseNegative": false }
+  },
+  {
+    "id": "SAMPLE-011",
+    "imageName": "silk_board_011.jpg",
+    "timestamp": "2026-06-02T08:45:00Z",
+    "location": "Silk Board Junction",
+    "preprocessingApplied": ["histogram_equalization", "contrast_adjustment"],
+    "imageQuality": { "brightness": 0.41, "blur": 0.19, "condition": "low_light" },
+    "groundTruth": {
+      "violations": ["HELMET_NON_COMPLIANCE", "SEATBELT_NON_COMPLIANCE"],
+      "licensePlate": "KA01CD5678",
+      "vehicleType": "Car",
+      "personCount": 2
+    },
+    "modelPrediction": {
+      "violations": ["HELMET_NON_COMPLIANCE", "SEATBELT_NON_COMPLIANCE"],
+      "licensePlate": "KA01CD5678",
+      "confidence": 0.88,
+      "processingTimeMs": 445
+    },
+    "evaluation": { "truePositive": true, "falsePositive": false, "falseNegative": false }
+  },
+  {
+    "id": "SAMPLE-012",
+    "imageName": "hebbal_012.jpg",
+    "timestamp": "2026-06-02T09:15:00Z",
+    "location": "Hebbal Flyover",
+    "preprocessingApplied": ["rain_dehazing", "noise_reduction"],
+    "imageQuality": { "brightness": 0.52, "blur": 0.38, "condition": "rain" },
+    "groundTruth": {
+      "violations": ["STOP_LINE_VIOLATION"],
+      "licensePlate": "KA05EF9012",
+      "vehicleType": "Car",
+      "personCount": 1
+    },
+    "modelPrediction": {
+      "violations": [],
+      "licensePlate": "KA05EF9012",
+      "confidence": 0.55,
+      "processingTimeMs": 489
+    },
+    "evaluation": { "truePositive": false, "falsePositive": false, "falseNegative": true }
+  },
+  {
+    "id": "SAMPLE-013",
+    "imageName": "mgroad_013.jpg",
+    "timestamp": "2026-06-02T10:00:00Z",
+    "location": "MG Road Junction",
+    "preprocessingApplied": ["contrast_adjustment"],
+    "imageQuality": { "brightness": 0.75, "blur": 0.11, "condition": "clear" },
+    "groundTruth": {
+      "violations": ["RED_LIGHT_VIOLATION"],
+      "licensePlate": "TN33AB9852",
+      "vehicleType": "Motorcycle",
+      "personCount": 2
+    },
+    "modelPrediction": {
+      "violations": ["RED_LIGHT_VIOLATION"],
+      "licensePlate": "TN33AB9852",
+      "confidence": 0.96,
+      "processingTimeMs": 311
+    },
+    "evaluation": { "truePositive": true, "falsePositive": false, "falseNegative": false }
+  },
+  {
+    "id": "SAMPLE-014",
+    "imageName": "indiranagar_014.jpg",
+    "timestamp": "2026-06-02T11:30:00Z",
+    "location": "Indiranagar 100ft Road",
+    "preprocessingApplied": ["histogram_equalization"],
+    "imageQuality": { "brightness": 0.68, "blur": 0.09, "condition": "clear" },
+    "groundTruth": {
+      "violations": ["MOBILE_PHONE_USAGE"],
+      "licensePlate": "KA03AB1234",
+      "vehicleType": "Car",
+      "personCount": 1
+    },
+    "modelPrediction": {
+      "violations": ["MOBILE_PHONE_USAGE"],
+      "licensePlate": "KA03AB1234",
+      "confidence": 0.84,
+      "processingTimeMs": 276
+    },
+    "evaluation": { "truePositive": true, "falsePositive": false, "falseNegative": false }
+  },
+  {
+    "id": "SAMPLE-015",
+    "imageName": "ecity_015.jpg",
+    "timestamp": "2026-06-02T13:00:00Z",
+    "location": "Electronic City Toll",
+    "preprocessingApplied": ["gamma_correction", "sharpening"],
+    "imageQuality": { "brightness": 0.37, "blur": 0.28, "condition": "low_light" },
+    "groundTruth": {
+      "violations": ["HELMET_NON_COMPLIANCE"],
+      "licensePlate": "TN01AB1234",
+      "vehicleType": "Motorcycle",
+      "personCount": 2
+    },
+    "modelPrediction": {
+      "violations": ["HELMET_NON_COMPLIANCE"],
+      "licensePlate": "TN01AB1234",
+      "confidence": 0.79,
+      "processingTimeMs": 467
+    },
+    "evaluation": { "truePositive": true, "falsePositive": false, "falseNegative": false }
+  },
+  {
+    "id": "SAMPLE-016",
+    "imageName": "yeshwanthpur_016.jpg",
+    "timestamp": "2026-06-02T14:45:00Z",
+    "location": "Yeshwanthpur Circle",
+    "preprocessingApplied": ["contrast_adjustment"],
+    "imageQuality": { "brightness": 0.63, "blur": 0.14, "condition": "shadow" },
+    "groundTruth": {
+      "violations": ["TRIPLE_RIDING"],
+      "licensePlate": "KA51MB8888",
+      "vehicleType": "Motorcycle",
+      "personCount": 3
+    },
+    "modelPrediction": {
+      "violations": ["TRIPLE_RIDING"],
+      "licensePlate": "KA51MB8888",
+      "confidence": 0.91,
+      "processingTimeMs": 348
+    },
+    "evaluation": { "truePositive": true, "falsePositive": false, "falseNegative": false }
+  },
+  {
+    "id": "SAMPLE-017",
+    "imageName": "silk_board_017.jpg",
+    "timestamp": "2026-06-02T16:00:00Z",
+    "location": "Silk Board Junction",
+    "preprocessingApplied": ["histogram_equalization"],
+    "imageQuality": { "brightness": 0.29, "blur": 0.41, "condition": "rain" },
+    "groundTruth": {
+      "violations": ["WRONG_SIDE_DRIVING"],
+      "licensePlate": "KA03HA2903",
+      "vehicleType": "Car",
+      "personCount": 1
+    },
+    "modelPrediction": {
+      "violations": ["WRONG_SIDE_DRIVING", "STOP_LINE_VIOLATION"],
+      "licensePlate": "KA03HA2903",
+      "confidence": 0.72,
+      "processingTimeMs": 498
+    },
+    "evaluation": { "truePositive": true, "falsePositive": true, "falseNegative": false }
+  },
+  {
+    "id": "SAMPLE-018",
+    "imageName": "mgroad_018.jpg",
+    "timestamp": "2026-06-02T17:20:00Z",
+    "location": "MG Road Junction",
+    "preprocessingApplied": ["contrast_adjustment", "noise_reduction"],
+    "imageQuality": { "brightness": 0.71, "blur": 0.10, "condition": "clear" },
+    "groundTruth": {
+      "violations": ["SEATBELT_NON_COMPLIANCE"],
+      "licensePlate": "KA05EF9012",
+      "vehicleType": "Car",
+      "personCount": 1
+    },
+    "modelPrediction": {
+      "violations": ["SEATBELT_NON_COMPLIANCE"],
+      "licensePlate": "KA05EF9012",
+      "confidence": 0.86,
+      "processingTimeMs": 302
+    },
+    "evaluation": { "truePositive": true, "falsePositive": false, "falseNegative": false }
+  },
+  {
+    "id": "SAMPLE-019",
+    "imageName": "hebbal_019.jpg",
+    "timestamp": "2026-06-02T18:15:00Z",
+    "location": "Hebbal Flyover",
+    "preprocessingApplied": ["gamma_correction"],
+    "imageQuality": { "brightness": 0.40, "blur": 0.22, "condition": "low_light" },
+    "groundTruth": {
+      "violations": ["RED_LIGHT_VIOLATION"],
+      "licensePlate": "KA01CD5678",
+      "vehicleType": "Motorcycle",
+      "personCount": 1
+    },
+    "modelPrediction": {
+      "violations": ["RED_LIGHT_VIOLATION"],
+      "licensePlate": "KA01CD5678",
+      "confidence": 0.88,
+      "processingTimeMs": 412
+    },
+    "evaluation": { "truePositive": true, "falsePositive": false, "falseNegative": false }
+  },
+  {
+    "id": "SAMPLE-020",
+    "imageName": "kanakapura_020.jpg",
+    "timestamp": "2026-06-03T07:00:00Z",
+    "location": "Kanakapura Road",
+    "preprocessingApplied": ["histogram_equalization", "sharpening"],
+    "imageQuality": { "brightness": 0.81, "blur": 0.08, "condition": "clear" },
+    "groundTruth": {
+      "violations": ["ILLEGAL_PARKING"],
+      "licensePlate": "TN33AB9852",
+      "vehicleType": "Auto-Rickshaw",
+      "personCount": 0
+    },
+    "modelPrediction": {
+      "violations": ["ILLEGAL_PARKING"],
+      "licensePlate": "TN33AB9852",
+      "confidence": 0.83,
+      "processingTimeMs": 258
+    },
+    "evaluation": { "truePositive": true, "falsePositive": false, "falseNegative": false }
+  }
+]

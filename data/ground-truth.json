@@ -1,0 +1,151 @@
+{
+  "_meta": {
+    "version": "1.0",
+    "created": "2026-06-01",
+    "annotators": ["Officer Rikash KS", "Officer Vimal Kumar"],
+    "annotationGuidelines": "docs/ANNOTATIONS.md",
+    "totalImages": 20,
+    "splitConfig": { "train": 60, "validation": 20, "test": 20 },
+    "confidenceThresholdUsed": 0.70,
+    "targetProcessingTime": "500ms"
+  },
+  "violationClasses": [
+    {
+      "id": "HELMET_NON_COMPLIANCE",
+      "label": "Helmet Non-Compliance",
+      "definition": "Rider's head is NOT covered by a certified helmet. No helmet, or helmet not properly worn (straps loose, tilted). Only annotate for the primary rider on a 2-wheeler.",
+      "edgeCases": ["Riding at <10kmph in compound", "Military/Police in uniform", "Sikh with turban"],
+      "visualIndicators": ["Bare head visible", "Hair/scalp clearly visible without helmet coverage"],
+      "confidenceThreshold": 0.70,
+      "baselineAccuracy": 0.87
+    },
+    {
+      "id": "TRIPLE_RIDING",
+      "label": "Triple Riding",
+      "definition": "3 or more persons seated on a single 2-wheeler (motorcycle or scooter). Count silhouettes visible on the 2-wheeler.",
+      "edgeCases": ["Child (< 6 years) in front does NOT count", "Side-car attached vehicles are exempt"],
+      "visualIndicators": ["3 distinct human torsos/heads visible on 2-wheeler"],
+      "confidenceThreshold": 0.75,
+      "baselineAccuracy": 0.85
+    },
+    {
+      "id": "RED_LIGHT_VIOLATION",
+      "label": "Red Light Violation",
+      "definition": "Vehicle crosses the painted stop-line AFTER the traffic signal has turned RED. Requires signal state = RED AND vehicle position = beyond stop-line.",
+      "edgeCases": ["Vehicles already mid-intersection when light turned red", "Emergency vehicles (exempt)", "Pedestrians crossing parallel (irrelevant)"],
+      "visualIndicators": ["Red signal visible in frame", "Vehicle bounding-box center past stop-line"],
+      "confidenceThreshold": 0.80,
+      "baselineAccuracy": 0.93
+    },
+    {
+      "id": "SEATBELT_NON_COMPLIANCE",
+      "label": "Seatbelt Non-Compliance",
+      "definition": "Driver or front-seat passenger NOT wearing a visible seatbelt strap across their torso.",
+      "edgeCases": ["Rear-seat passengers: NOT enforced in this prototype", "Pregnant women: exempt"],
+      "visualIndicators": ["No diagonal seatbelt strap visible across driver/front passenger"],
+      "confidenceThreshold": 0.72,
+      "baselineAccuracy": 0.88
+    },
+    {
+      "id": "MOBILE_PHONE_USAGE",
+      "label": "Mobile Phone Usage",
+      "definition": "Driver is actively holding a mobile phone to their ear OR looking down at a device while the vehicle is in motion.",
+      "edgeCases": ["Stopped vehicles: NOT a moving traffic violation", "Hands-free devices: NOT a violation"],
+      "visualIndicators": ["Phone-shaped object near face", "Hand raised to ear with device"],
+      "confidenceThreshold": 0.72,
+      "baselineAccuracy": 0.90
+    },
+    {
+      "id": "WRONG_SIDE_DRIVING",
+      "label": "Wrong-Side Driving",
+      "definition": "Vehicle travelling against the correct flow of traffic on a divided road.",
+      "edgeCases": ["One-way roads: always wrong-side if going opposite direction", "Emergency overtaking: context-dependent"],
+      "visualIndicators": ["Vehicle trajectory points into oncoming lane", "Vehicle facing cameras from wrong direction"],
+      "confidenceThreshold": 0.78,
+      "baselineAccuracy": 0.91
+    },
+    {
+      "id": "STOP_LINE_VIOLATION",
+      "label": "Stop Line Violation",
+      "definition": "Vehicle stops beyond the painted stop-line at a signal or pedestrian crossing.",
+      "edgeCases": ["Large vehicles with long hoods: measure front bumper", "Gradual creep: only if clearly beyond 1m past line"],
+      "visualIndicators": ["Vehicle front wheel/bumper is beyond white painted line"],
+      "confidenceThreshold": 0.70,
+      "baselineAccuracy": 0.89
+    },
+    {
+      "id": "ILLEGAL_PARKING",
+      "label": "Illegal Parking",
+      "definition": "Vehicle parked in a no-parking zone (marked by yellow lines, signs, or bus stops) for > 5 minutes.",
+      "edgeCases": ["Loading/unloading under 2 minutes: NOT annotated", "Emergency stops: NOT annotated"],
+      "visualIndicators": ["Yellow no-parking markings visible", "Stationary vehicle with no occupant"],
+      "confidenceThreshold": 0.70,
+      "baselineAccuracy": 0.87
+    },
+    {
+      "id": "OVERLOADED_VEHICLE",
+      "label": "Overloaded Vehicle",
+      "definition": "Truck, van, or auto-rickshaw carrying load that visually exceeds safe capacity (load sticking out > 30cm beyond vehicle boundary, or suspension visibly compressed).",
+      "edgeCases": ["Agricultural vehicles in designated zones: may be exempt", "Contested load weight: flag for manual review"],
+      "visualIndicators": ["Goods visible beyond vehicle boundary", "Rear suspension compressed down"],
+      "confidenceThreshold": 0.75,
+      "baselineAccuracy": 0.88
+    }
+  ],
+  "annotationRules": {
+    "generalRules": [
+      "All annotations must be made on original, unenhanced images",
+      "Minimum image resolution for annotation: 320x240 pixels",
+      "When uncertain (confidence < 0.65 of annotator), mark as 'REQUIRES_SECOND_REVIEW'",
+      "Never annotate the same image twice as the same violation",
+      "Record inter-annotator agreement score for each image"
+    ],
+    "boundingBoxRules": [
+      "Draw bounding box tightly around the violating object/person",
+      "For helmet: box around rider's head only",
+      "For triple riding: box around entire 2-wheeler",
+      "For red-light: box around vehicle + visible signal in frame",
+      "Minimum bounding box: 20x20 pixels",
+      "Include at least 5px padding around detected object"
+    ],
+    "licencePlateRules": [
+      "OCR accuracy target: 70%+ for clear conditions",
+      "Mark as UNREADABLE if plate is occluded > 50%",
+      "Mark as ANGLED if plate tilt > 30 degrees",
+      "Always store what was OCR-extracted, even if partial"
+    ]
+  },
+  "interAnnotatorAgreement": {
+    "method": "Cohen's Kappa",
+    "targetKappa": 0.80,
+    "currentKappa": 0.83,
+    "disagreementResolutionProcess": "Third reviewer (senior officer) casts deciding annotation"
+  },
+  "testDatasetStats": {
+    "totalAnnotatedImages": 20,
+    "byCondition": {
+      "clear": 8,
+      "low_light": 7,
+      "rain": 3,
+      "motion_blur": 1,
+      "shadow": 1
+    },
+    "byViolationType": {
+      "HELMET_NON_COMPLIANCE": 5,
+      "TRIPLE_RIDING": 3,
+      "RED_LIGHT_VIOLATION": 4,
+      "SEATBELT_NON_COMPLIANCE": 3,
+      "MOBILE_PHONE_USAGE": 2,
+      "WRONG_SIDE_DRIVING": 2,
+      "STOP_LINE_VIOLATION": 1,
+      "ILLEGAL_PARKING": 2,
+      "OVERLOADED_VEHICLE": 1
+    },
+    "truePositives": 16,
+    "falsePositives": 2,
+    "falseNegatives": 2,
+    "overallPrecision": 0.889,
+    "overallRecall": 0.889,
+    "overallF1": 0.889
+  }
+}
