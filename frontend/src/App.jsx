@@ -2632,16 +2632,21 @@ function AuthPage({ onLoginSuccess }){
 
   const handleCitizenQuickSubmit = (e) => {
     e.preventDefault();
-    if (!citizenInput.trim()) {
+    const val = citizenInput.trim().replace(/\s+/g, '');
+    if (!val) {
       setError('Please enter a plate number or mobile number.');
       return;
     }
     setError('');
+    // Detect if it's a phone number (10 digits) or plate number
+    const isPhone = /^\d{10}$/.test(val.replace(/^\+?91/, ''));
     onLoginSuccess({
-      email: citizenInput.trim(),
+      email: val,
       role: 'customer',
       name: 'Citizen User (Quick)',
-      plate: citizenInput.trim()
+      plate: isPhone ? val : val.toUpperCase(),
+      phone: isPhone ? val : '',
+      vehicleNumber: isPhone ? '' : val.toUpperCase()
     });
   };
 
