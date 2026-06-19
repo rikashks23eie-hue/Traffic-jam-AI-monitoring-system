@@ -2624,7 +2624,9 @@ function AuthPage({ onLoginSuccess }){
   const [name, setName] = useState('');
   const [policeCode, setPoliceCode] = useState('');
   const [citizenInput, setCitizenInput] = useState('');
-  const [citizenSubMode, setCitizenSubMode] = useState('quick'); // Always 'quick' now
+  const [citizenPlate, setCitizenPlate] = useState('');
+  const [citizenPhone, setCitizenPhone] = useState('');
+  const [citizenSubMode, setCitizenSubMode] = useState('quick'); // 'quick', 'login', 'register'
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -2784,11 +2786,18 @@ function AuthPage({ onLoginSuccess }){
             <form onSubmit={handleCitizenQuickSubmit}>
               <div className="auth-inp-group">
                 <label className="auth-lbl">Plate Number or Mobile Number</label>
-                <input required type="text" className="auth-inp" placeholder="e.g. KA03HA2903 or +91 9043475616" value={citizenInput} onChange={e=>setCitizenInput(e.target.value)}/>
+                <input required type="text" className="auth-inp" placeholder="e.g. KA03HA2903 or 9043475616" value={citizenInput} onChange={e=>setCitizenInput(e.target.value)}/>
               </div>
               <button type="submit" className="btn btn-p" style={{width: '100%', justifyContent: 'center', padding: '11px 0', marginTop: 10}}>
                 Access Quick Portal 🔍
               </button>
+              <div style={{marginTop: 20, textAlign: 'center', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: 16}}>
+                <span style={{fontSize: 11, color: '#6b7280'}}>Have a full account?</span>
+                <div style={{marginTop: 8, display: 'flex', gap: 10, justifyContent: 'center'}}>
+                  <button type="button" className="btn btn-g btn-xs" onClick={() => { setCitizenSubMode('login'); setError(''); }}>Log In</button>
+                  <button type="button" className="btn btn-g btn-xs" onClick={() => { setCitizenSubMode('register'); setError(''); setIsLogin(false); }}>Sign Up</button>
+                </div>
+              </div>
             </form>
           ) : (
             /* Standard Auth Form (Login or Signup) for Police, Admin, and Citizen accounts */
