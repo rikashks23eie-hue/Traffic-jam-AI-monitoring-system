@@ -2747,7 +2747,7 @@ function AuthPage({ onLoginSuccess }){
             {[
               { id: 'police', label: '👮 Police', color: '#3b82f6' },
               { id: 'admin', label: '👑 Admin', color: '#a855f7' },
-              { id: 'citizen', label: '🚗 Citizen', color: '#10b981' }
+              { id: 'citizen', label: '🚨 Rule Breakers', color: '#ef4444' }
             ].map(tab => (
               <button 
                 key={tab.id}
@@ -2774,15 +2774,12 @@ function AuthPage({ onLoginSuccess }){
           <h2 style={{fontSize: 22, fontWeight: 800, color: '#f3f4f6', marginBottom: 6}}>
             {authMode === 'police' && (isLogin ? 'Officer Sign In' : 'Officer Sign Up')}
             {authMode === 'admin' && (isLogin ? 'Administrator Sign In' : 'Administrator Sign Up')}
-            {authMode === 'citizen' && (
-              citizenSubMode === 'quick' ? 'Quick Fine Query' : 
-              citizenSubMode === 'login' ? 'Citizen Sign In' : 'Register Citizen Account'
-            )}
+            {authMode === 'citizen' && '🚨 Rule Breaker Fine Lookup'}
           </h2>
           <p style={{fontSize: 12, color: '#9ca3af', marginBottom: 24}}>
             {authMode === 'police' && (isLogin ? 'Access the enforcement command center.' : 'Register a new verified police account.')}
             {authMode === 'admin' && (isLogin ? 'Sign in with system administrator privileges.' : 'Create a new administrative controller.')}
-            {authMode === 'citizen' && ('Search and pay challans instantly without an account.')}
+            {authMode === 'citizen' && 'Enter your Phone Number or Vehicle Number to check and pay your traffic fines.'}
           </p>
 
           {error && <div className="alert a-err" style={{fontSize: 12, marginBottom: 16}}><AlertTriangle size={12}/>{error}</div>}
@@ -2923,310 +2920,210 @@ function getVehicleFallbackDetails(plate) {
 }
 
 // ─────────────────────────────────────────────
-// PAGE: CUSTOMER / RULE BREAKERS CHALLAN PORTAL
+// ─────────────────────────────────────────────
+// PAGE: RULE BREAKERS CHALLAN PORTAL (REWRITTEN)
 // ─────────────────────────────────────────────
 function CustomerPortalPage({ currentUser, onLogout, addToast }) {
   const [violations, setViolations] = useState([]);
   const [registry, setRegistry] = useState(null);
-  const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [paymentModalItem, setPaymentModalItem] = useState(null);
   const [paying, setPaying] = useState(false);
+  const hasFetchedRef = React.useRef(false);
 
-  const identifier = currentUser.plate || currentUser.vehicleNumber || currentUser.phone || '';
-
-  const fetchCustomerData = useCallback(() => {
-    setLoading(true);
-    const cleanIdent = identifier.trim().replace(/\s+/g, '');
-    const isPhone = cleanIdent.startsWith('+') || /^\d{10}$/.test(cleanIdent.replace(/^\+?91/, ''));
-    let url = `${API}/violations?`;
-    if (isPhone) {
-      url += `phone=${encodeURIComponent(identifier.trim())}`;
-    } else {
-      url += `plate=${encodeURIComponent(identifier.toUpperCase().replace(/\s+/g, ''))}`;
-    }
-
-    Promise.all([
-      fetch(`${API}/registry/${encodeURIComponent(identifier)}`).then(r => r.json()).catch(() => null),
-      fetch(url).then(r => r.json()).catch(() => null),
-      fetch(`${API}/notifications?email=${encodeURIComponent(currentUser.email)}`).then(r => r.json()).catch(() => null)
-    ])
-    .then(([regData, vioData, notifData]) => {
-      setLoading(false);
-      if (regData && regData.success) {
-        setRegistry(regData.registry);
-      }
-      if (vioData && vioData.violations) {
-        const unpaid = vioData.violations.filter(v => v.status === 'SENT' || v.status === 'PENDING');
-        setViolations(unpaid);
-        
-        if (isPhone && unpaid.length > 0 && !registry) {
-          const firstPlate = unpaid[0].licensePlate;
-          fetch(`${API}/registry/${encodeURIComponent(firstPlate)}`).then(r => r.json()).then(regD => {
-            if (regD && regD.success) setRegistry(regD.registry);
-          }).catch(() => null);
-        }
-      }
-      if (notifData && notifData.success) {
-        setNotifications(notifData.notifications || []);
-      }
-    })
-    .catch(() => {
-      setLoading(false);
-    });
-  }, [identifier, registry, currentUser.email]);
+  const identifier = (currentUser.phone || currentUser.vehicleNumber || currentUser.plate || currentUser.email || '').trim().replace(/\s+/g, '');
+  const isPhone = /^\d{10}$/.test(identifier.replace(/^\+?91/, ''));
 
   useEffect(() => {
-    fetchCustomerData();
+    if (!identifier) return;
+    setLoading(true);
+    hasFetchedRef.current = false;
+
+    const vioUrl = isPhone
+      ? `${API}/violations?phone=${encodeURIComponent(identifier)}`
+      : `${API}/violations?plate=${encodeURIComponent(identifier.toUpperCase())}`;
+
+    const regUrl = `${API}/registry/${encodeURIComponent(identifier)}`;
+
+    Promise.all([
+      fetch(vioUrl).then(r => r.json()).catch(() => ({ violations: [] })),
+      fetch(regUrl).then(r => r.json()).catch(() => null)
+    ]).then(([vioData, regData]) => {
+      const unpaid = (vioData?.violations || []).filter(v => v.status === 'SENT' || v.status === 'PENDING');
+      setViolations(unpaid);
+
+      if (regData?.success) {
+        setRegistry(regData.registry);
+      } else if (isPhone && unpaid.length > 0) {
+        // Try to fetch registry by plate from first violation
+        const firstPlate = unpaid[0].licensePlate;
+        fetch(`${API}/registry/${encodeURIComponent(firstPlate)}`)
+          .then(r => r.json())
+          .then(d => { if (d?.success) setRegistry(d.registry); })
+          .catch(() => null);
+      }
+      setLoading(false);
+    }).catch(() => setLoading(false));
   }, [identifier]);
 
-  // Outstanding fines
-  const totalBaseFine = violations.reduce((sum, v) => sum + v.fineAmount, 0);
-  const isChase = totalBaseFine > 5000;
-  const interest = isChase ? Math.round(totalBaseFine * 0.12) : 0;
-  const totalAmount = totalBaseFine + interest;
+  const totalFine = violations.reduce((s, v) => s + (v.fineAmount || 0), 0);
+  const isChase = totalFine > 5000;
 
   const executePayment = () => {
     if (!paymentModalItem) return;
     setPaying(true);
-    
-    fetch(`${API}/violations/${paymentModalItem.violationId}/pay`, {
-      method: 'POST'
-    })
-    .then(r => r.json())
-    .then(data => {
-      setPaying(false);
-      if (data.success) {
-        addToast(`Payment of ₹${paymentModalItem.fineAmount} successful! Case closed.`, 'success');
-        setPaymentModalItem(null);
-        fetchCustomerData();
-      } else {
-        addToast('Payment failed. Try again.', 'warning');
-      }
-    })
-    .catch(() => {
-      setPaying(false);
-      addToast('Payment failed. Connection error.', 'warning');
-    });
-  };
-
-  const markAsRead = (id) => {
-    fetch(`${API}/notifications/${id}/read`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: currentUser.email })
-    })
-    .then(r => r.json())
-    .then(data => {
-      if (data.success) {
-        setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
-      }
-    })
-    .catch(() => null);
+    fetch(`${API}/violations/${paymentModalItem.violationId}/pay`, { method: 'POST' })
+      .then(r => r.json())
+      .then(data => {
+        setPaying(false);
+        if (data.success) {
+          addToast(`✅ Payment of ₹${paymentModalItem.fineAmount} successful! Case closed.`, 'success');
+          setPaymentModalItem(null);
+          setViolations(prev => prev.filter(v => v.violationId !== paymentModalItem.violationId));
+        } else {
+          addToast('Payment failed. Try again.', 'warning');
+        }
+      })
+      .catch(() => { setPaying(false); addToast('Connection error. Try again.', 'warning'); });
   };
 
   return (
-    <div style={{padding: '24px', maxWidth: '960px', margin: '0 auto', minHeight: '100vh', display: 'flex', flexDirection: 'column', gap: '20px'}}>
-      {/* Top Banner */}
-      <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #111e47', paddingBottom: '16px'}}>
+    <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #0a0f1e 0%, #0f1b35 50%, #1a0a2e 100%)', padding: '0', fontFamily: 'Inter, sans-serif' }}>
+      {/* Header */}
+      <div style={{ background: 'rgba(239,68,68,0.08)', borderBottom: '1px solid rgba(239,68,68,0.2)', padding: '16px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <div style={{fontSize: '20px', fontWeight: 800, color: '#f3f4f6', letterSpacing: '.5px'}}>🇮🇳 TRAFFIC CHALLAN CITIZEN PORTAL</div>
-          <div style={{fontSize: '12px', color: '#9ca3af', marginTop: '4px'}}>Logged in via: <strong style={{color: '#60a5fa'}}>{identifier}</strong></div>
+          <div style={{ fontSize: 20, fontWeight: 800, color: '#f3f4f6', letterSpacing: '.5px' }}>🚨 RULE BREAKER FINE PORTAL</div>
+          <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 2 }}>Searched: <strong style={{ color: '#f87171' }}>{identifier}</strong></div>
         </div>
-        <button className="btn btn-g" onClick={onLogout}><LogOut size={14}/> Exit Portal</button>
+        <button className="btn btn-g" onClick={onLogout}><LogOut size={14}/> Exit</button>
       </div>
 
-      {loading ? (
-        <div style={{display: 'flex', justifyContent: 'center', padding: '100px'}}><div className="spin"/></div>
-      ) : (
-        <div className="g2">
-          {/* Left Column: Vehicle & Balance */}
-          <div style={{display: 'flex', flexDirection: 'column', gap: '16px'}}>
-            {registry ? (
-              <div className="card" style={{border: '1px solid #1e3a8a', background: 'rgba(30,58,95,0.1)'}}>
-                <div className="card-hdr">
-                  <div className="card-ttl"><Car size={14}/> Registered Vehicle Profile</div>
-                  {isChase && <span className="chip chip-bad" style={{background:'#ef4444', animation:'pulseGlow 1.5s infinite'}}>⚠️ CHASE CATEGORY</span>}
-                </div>
-                
-                <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginTop: '10px'}}>
-                  {[
-                    ['Owner Name', registry.ownerName],
-                    ['Plate Number', registry.plate],
-                    ['RTO Office', registry.registeredAt],
-                    ['Vehicle Model', `${registry.brand} ${registry.model}`],
-                    ['Fuel Category', registry.fuelType],
-                    ['Insurance Status', registry.insuranceStatus],
-                  ].map(([k, v]) => (
-                    <div key={k} style={{display: 'flex', flexDirection: 'column', padding: '4px 0', borderBottom: '1px solid rgba(255,255,255,0.05)'}}>
-                      <span style={{fontSize: '10px', color: '#9ca3af'}}>{k}</span>
-                      <span style={{fontSize: '12px', color: '#f3f4f6', fontWeight: 600}}>{v}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ) : (
-              <div className="card">
-                <div style={{fontSize: '12px', color: '#9ca3af', textAlign: 'center'}}>No vehicle registry linked yet. Enter plate number directly to see details.</div>
-              </div>
-            )}
-
-            {/* Total Balance Card */}
-            <div className="card" style={{
-              background: isChase ? 'linear-gradient(135deg, rgba(239,68,68,0.1), rgba(15,23,42,0.8))' : 'linear-gradient(135deg, rgba(16,185,129,0.05), rgba(15,23,42,0.8))',
-              borderColor: isChase ? '#ef4444' : '#10b981'
-            }}>
-              <div style={{fontSize: '12px', color: '#9ca3af', textTransform: 'uppercase', fontWeight: 700}}>Total Outstanding Balance</div>
-              <div style={{fontSize: '36px', fontWeight: 800, color: isChase ? '#ef4444' : '#10b981', fontFamily: 'JetBrains Mono', margin: '10px 0'}}>
-                ₹{totalAmount.toLocaleString()}
-              </div>
-              {isChase && (
-                <div style={{fontSize: '11px', color: '#fca5a5', lineHeight: 1.5, marginBottom: 10}}>
-                  ⚠️ **Chase Category Active:** Outstanding balance exceeds ₹5,000. A 12% surcharge has been applied to your fine amount. Please clear immediately.
-                </div>
-              )}
-              {violations.length > 0 ? (
-                <div style={{fontSize: '12px', color: '#9ca3af'}}>
-                  You have <strong>{violations.length}</strong> active challans. Select a challan below to pay.
-                </div>
-              ) : (
-                <div style={{fontSize: '12px', color: '#34d399', fontWeight: 600}}>
-                  🎉 No outstanding fines! Your license is clear.
-                </div>
-              )}
-            </div>
-
-            {/* Citizen Alerts Inbox */}
-            <div className="card animate-slideup" style={{border: '1px solid rgba(255,255,255,0.05)', background: 'rgba(15,23,42,0.4)', marginTop: 8}}>
-              <div className="card-hdr" style={{borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: 8, marginBottom: 12}}>
-                <div className="card-ttl" style={{fontSize: 13, display: 'flex', alignItems: 'center'}}>
-                  <Mail size={13} color="#60a5fa" style={{marginRight: 6}}/>
-                  Citizen Notifications Inbox
-                  {notifications.filter(n => !n.read).length > 0 && (
-                    <span className="chip chip-bad" style={{fontSize: 9, padding: '2px 6px', marginLeft: 8, background: '#ef4444'}}>
-                      {notifications.filter(n => !n.read).length} New
-                    </span>
-                  )}
-                </div>
-              </div>
-              
-              {notifications.length === 0 ? (
-                <div style={{fontSize: 11, color: '#6b7280', textAlign: 'center', padding: '16px 0'}}>
-                  No official notifications received yet.
-                </div>
-              ) : (
-                <div style={{display: 'flex', flexDirection: 'column', gap: 8, maxHeight: 180, overflowY: 'auto', paddingRight: 4}}>
-                  {notifications.map((n) => (
-                    <div 
-                      key={n.id} 
-                      onClick={() => !n.read && markAsRead(n.id)}
-                      style={{
-                        padding: '10px 12px',
-                        background: n.read ? 'rgba(255,255,255,0.01)' : 'rgba(59,130,246,0.05)',
-                        border: n.read ? '1px solid rgba(255,255,255,0.03)' : '1px solid rgba(59,130,246,0.2)',
-                        borderRadius: 8,
-                        cursor: n.read ? 'default' : 'pointer',
-                        transition: 'all 0.2s ease',
-                        position: 'relative'
-                      }}
-                    >
-                      {!n.read && <div style={{position: 'absolute', top: 10, right: 10, width: 6, height: 6, borderRadius: '50%', background: '#ef4444'}}/>}
-                      <div style={{fontSize: 11, color: n.read ? '#cbd5e1' : '#f3f4f6', lineHeight: 1.4, paddingRight: 12}}>{n.message}</div>
-                      <div style={{fontSize: 9, color: '#6b7280', marginTop: 6, display: 'flex', justifyContent: 'space-between'}}>
-                        <span>Ref: {n.violationId}</span>
-                        <span>{new Date(n.createdAt).toLocaleTimeString('en-IN', {hour: '2-digit', minute: '2-digit'})}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+      <div style={{ maxWidth: 900, margin: '0 auto', padding: '24px 16px' }}>
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: '80px 0' }}>
+            <div className="spin" style={{ margin: '0 auto 16px' }}/>
+            <div style={{ color: '#9ca3af', fontSize: 13 }}>Searching for fines linked to <strong style={{ color: '#f87171' }}>{identifier}</strong>...</div>
           </div>
+        ) : (
+          <>
+            {/* Summary Banner */}
+            <div style={{
+              background: violations.length > 0
+                ? 'linear-gradient(135deg, rgba(239,68,68,0.12), rgba(15,23,42,0.9))'
+                : 'linear-gradient(135deg, rgba(16,185,129,0.1), rgba(15,23,42,0.9))',
+              border: `1px solid ${violations.length > 0 ? '#ef4444' : '#10b981'}`,
+              borderRadius: 14, padding: '20px 24px', marginBottom: 20,
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12
+            }}>
+              <div>
+                <div style={{ fontSize: 12, color: '#9ca3af', textTransform: 'uppercase', fontWeight: 700, marginBottom: 6 }}>Total Outstanding Fine</div>
+                <div style={{ fontSize: 42, fontWeight: 800, color: violations.length > 0 ? '#f87171' : '#34d399', fontFamily: 'monospace' }}>₹{totalFine.toLocaleString()}</div>
+                <div style={{ fontSize: 12, color: '#9ca3af', marginTop: 4 }}>
+                  {violations.length > 0 ? `${violations.length} active challan(s) pending payment` : '🎉 No outstanding fines! You are clear.'}
+                </div>
+                {isChase && <div style={{ marginTop: 8, fontSize: 11, color: '#fca5a5', background: 'rgba(239,68,68,0.1)', padding: '4px 10px', borderRadius: 6, display: 'inline-block' }}>⚠️ Chase Category — 12% surcharge applied for balance over ₹5,000</div>}
+              </div>
+              {registry && (
+                <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10, padding: '12px 16px', minWidth: 200 }}>
+                  <div style={{ fontSize: 10, color: '#9ca3af', marginBottom: 6, textTransform: 'uppercase' }}>Vehicle Info</div>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: '#f3f4f6' }}>{registry.ownerName}</div>
+                  <div style={{ fontSize: 11, color: '#60a5fa', marginTop: 2 }}>{registry.plate}</div>
+                  <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 2 }}>{registry.brand} {registry.model}</div>
+                  <div style={{ fontSize: 10, color: registry.insuranceStatus === 'Active' ? '#34d399' : '#f87171', marginTop: 4, fontWeight: 600 }}>Insurance: {registry.insuranceStatus}</div>
+                </div>
+              )}
+            </div>
 
-          {/* Right Column: Challan List */}
-          <div className="card" style={{display: 'flex', flexDirection: 'column', gap: '12px'}}>
-            <div style={{fontSize: '14px', fontWeight: 800, color: '#f3f4f6', borderBottom: '1px solid #1e293b', paddingBottom: '8px'}}>Active Traffic Challans</div>
-            
+            {/* Challans List */}
             {violations.length === 0 ? (
-              <div style={{textAlign: 'center', padding: '40px', color: '#6b7280'}}>
-                <CheckCircle size={36} color="#10b981" style={{margin: '0 auto 10px', opacity: 0.7}}/>
-                <div style={{fontSize: '13px'}}>No active challans found.</div>
+              <div style={{ background: 'rgba(16,185,129,0.05)', border: '1px solid rgba(16,185,129,0.2)', borderRadius: 14, padding: '48px', textAlign: 'center' }}>
+                <CheckCircle size={48} color="#10b981" style={{ margin: '0 auto 12px', opacity: 0.8 }}/>
+                <div style={{ fontSize: 16, fontWeight: 700, color: '#34d399' }}>No Challans Found!</div>
+                <div style={{ fontSize: 12, color: '#9ca3af', marginTop: 6 }}>No pending fines found for <strong>{identifier}</strong>. You are all clear! ✅</div>
               </div>
             ) : (
-              <div style={{display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '500px', overflowY: 'auto'}}>
-                {violations.map((vio) => (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <div style={{ fontSize: 13, fontWeight: 700, color: '#f3f4f6', marginBottom: 4 }}>🧾 Active Traffic Challans</div>
+                {violations.map(vio => (
                   <div key={vio.violationId} style={{
-                    background: 'rgba(255,255,255,0.02)',
-                    border: '1px solid #1e293b',
-                    borderRadius: '10px',
-                    padding: '12px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '8px'
+                    background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(239,68,68,0.15)',
+                    borderRadius: 12, padding: '16px', display: 'flex',
+                    justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12
                   }}>
-                    <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start'}}>
-                      <div>
-                        <div style={{fontSize: '13px', fontWeight: 700, color: '#f3f4f6'}}>{vio.label}</div>
-                        <div style={{fontSize: '11px', color: '#9ca3af', marginTop: '2px'}}>{typeof vio.location === 'string' ? vio.location : (vio.location?.name || 'Silk Board Junction')} · {new Date(vio.detectedAt || vio.createdAt).toLocaleString('en-IN')}</div>
+                    <div style={{ flex: 1, minWidth: 200 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                        <span style={{ fontWeight: 700, fontSize: 14, color: '#f3f4f6' }}>{vio.label}</span>
+                        <span style={{ fontSize: 10, padding: '2px 8px', background: 'rgba(59,130,246,0.15)', color: '#60a5fa', borderRadius: 4, border: '1px solid rgba(59,130,246,0.2)', fontFamily: 'monospace' }}>{vio.licensePlate}</span>
                       </div>
-                      <span className="plate" style={{fontSize: '10px', padding: '2px 6px'}}>{vio.licensePlate}</span>
+                      <div style={{ fontSize: 11, color: '#9ca3af' }}>
+                        📍 {typeof vio.location === 'string' ? vio.location : (vio.location?.name || 'Junction')} &nbsp;·&nbsp;
+                        🕐 {new Date(vio.detectedAt || vio.createdAt).toLocaleString('en-IN')}
+                      </div>
+                      {vio.isEmergencyExempt && <div style={{ fontSize: 10, color: '#34d399', marginTop: 4 }}>🛡️ {vio.exemptReason}</div>}
                     </div>
-
-                    {vio.isEmergencyExempt && (
-                      <div style={{fontSize: '10px', color: '#34d399', background: 'rgba(52,211,153,0.1)', padding: '4px 8px', borderRadius: '4px'}}>
-                        🛡️ Exemption / Warning: {vio.exemptReason}
-                      </div>
-                    )}
-
-                    <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '8px', marginTop: '4px'}}>
-                      <div>
-                        <span style={{fontSize: '10px', color: '#9ca3af'}}>Fine Owed: </span>
-                        <strong className="mono" style={{color: '#f87171', fontSize: '13px'}}>₹{vio.fineAmount.toLocaleString()}</strong>
-                        {vio.isChaseCategory && <span style={{fontSize: '9px', color: '#f87171', marginLeft: '6px'}}>(incl. interest)</span>}
-                      </div>
-                      <button className="btn btn-p btn-xs" onClick={() => setPaymentModalItem(vio)}>Pay Challan 💳</button>
+                    <div style={{ textAlign: 'right' }}>
+                      <div style={{ fontSize: 11, color: '#9ca3af' }}>Fine Amount</div>
+                      <div style={{ fontSize: 22, fontWeight: 800, color: '#f87171', fontFamily: 'monospace' }}>₹{(vio.fineAmount || 0).toLocaleString()}</div>
+                      {vio.isChaseCategory && <div style={{ fontSize: 9, color: '#fca5a5' }}>+ 12% surcharge</div>}
+                      <button
+                        onClick={() => setPaymentModalItem(vio)}
+                        style={{
+                          marginTop: 8, padding: '8px 18px', background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+                          color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, fontSize: 13,
+                          cursor: 'pointer', transition: 'all 0.2s'
+                        }}
+                      >💳 Pay Now</button>
                     </div>
                   </div>
                 ))}
               </div>
             )}
-          </div>
-        </div>
-      )}
+          </>
+        )}
+      </div>
 
-      {/* Payment QR Code Modal */}
+      {/* Payment Modal */}
       {paymentModalItem && (
-        <div className="modal-bg" onClick={e => e.target === e.currentTarget && setPaymentModalItem(null)}>
-          <div className="modal" style={{maxWidth: '380px', textAlign: 'center'}}>
-            <button className="modal-close" onClick={() => setPaymentModalItem(null)}><X size={18}/></button>
-            
-            <div style={{fontSize: '16px', fontWeight: 800, color: '#f3f4f6', marginBottom: '10px'}}>Secure Challan Payment</div>
-            <div style={{fontSize: '12px', color: '#9ca3af', marginBottom: '20px'}}>Challan Ref: {paymentModalItem.violationId}</div>
+        <div style={{
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000
+        }} onClick={e => e.target === e.currentTarget && setPaymentModalItem(null)}>
+          <div style={{
+            background: '#0f1b35', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 16,
+            padding: '28px', maxWidth: 380, width: '90%', textAlign: 'center', position: 'relative'
+          }}>
+            <button onClick={() => setPaymentModalItem(null)} style={{
+              position: 'absolute', top: 12, right: 12, background: 'rgba(255,255,255,0.05)',
+              border: 'none', color: '#9ca3af', cursor: 'pointer', borderRadius: 6, padding: '4px 8px', fontSize: 14
+            }}>✕</button>
 
-            {/* QR Code Container */}
-            <div style={{background: '#fff', padding: '16px', borderRadius: '12px', display: 'inline-block', marginBottom: '16px', border: '2px solid #3b82f6'}}>
-              <img 
-                src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(`upi://pay?pa=bengalurutraffic@upi&pn=BengaluruTraffic&am=${paymentModalItem.fineAmount}&tr=${paymentModalItem.violationId}`)}`} 
-                alt="Payment QR Code"
-                style={{display: 'block', width: '180px', height: '180px'}}
+            <div style={{ fontSize: 17, fontWeight: 800, color: '#f3f4f6', marginBottom: 4 }}>💳 Secure Fine Payment</div>
+            <div style={{ fontSize: 11, color: '#9ca3af', marginBottom: 20 }}>Challan: {paymentModalItem.violationId}</div>
+
+            <div style={{ background: '#fff', padding: 14, borderRadius: 10, display: 'inline-block', marginBottom: 14, border: '3px solid #ef4444' }}>
+              <img
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=170x170&data=${encodeURIComponent(`upi://pay?pa=bengalurutraffic@upi&pn=BengaluruTraffic&am=${paymentModalItem.fineAmount}&tr=${paymentModalItem.violationId}`)}`}
+                alt="UPI QR" style={{ display: 'block', width: 170, height: 170 }}
               />
             </div>
 
-            <div style={{fontSize: '13px', color: '#cbd5e1', fontWeight: 600, marginBottom: '6px'}}>
-              Scan using any UPI App (GPay, Paytm, PhonePe)
-            </div>
-            <div style={{fontSize: '12px', color: '#9ca3af', marginBottom: '20px'}}>
-              Amount to pay: <strong style={{color: '#f87171', fontSize: '15px'}}>₹{paymentModalItem.fineAmount.toLocaleString()}</strong>
-            </div>
+            <div style={{ fontSize: 12, color: '#cbd5e1', marginBottom: 4 }}>Scan with GPay, PhonePe, or Paytm</div>
+            <div style={{ fontSize: 13, color: '#9ca3af', marginBottom: 20 }}>Amount: <strong style={{ color: '#f87171', fontSize: 18 }}>₹{paymentModalItem.fineAmount.toLocaleString()}</strong></div>
 
-            <div style={{display: 'flex', flexDirection: 'column', gap: '8px'}}>
-              <button className="btn btn-success" style={{width: '100%', justifyContent: 'center'}} onClick={executePayment} disabled={paying}>
-                {paying ? <div className="spin"/> : 'Simulate Payment Completion'}
-              </button>
-              <button className="btn btn-g" style={{width: '100%', justifyContent: 'center'}} onClick={() => setPaymentModalItem(null)}>
-                Cancel
-              </button>
-            </div>
+            <button
+              onClick={executePayment} disabled={paying}
+              style={{
+                width: '100%', padding: '12px 0', background: paying ? '#374151' : 'linear-gradient(135deg, #ef4444, #dc2626)',
+                color: '#fff', border: 'none', borderRadius: 10, fontWeight: 700, fontSize: 14,
+                cursor: paying ? 'not-allowed' : 'pointer', marginBottom: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8
+              }}
+            >
+              {paying ? <><div className="spin"/> Processing...</> : '✅ Confirm Payment Paid'}
+            </button>
+            <button onClick={() => setPaymentModalItem(null)} style={{
+              width: '100%', padding: '10px 0', background: 'rgba(255,255,255,0.05)',
+              color: '#9ca3af', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, cursor: 'pointer', fontSize: 13
+            }}>Cancel</button>
           </div>
         </div>
       )}
