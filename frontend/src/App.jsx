@@ -6,7 +6,7 @@ import {
   FileText, Users, Database, ChevronRight, Bell, Layers,
   ArrowUp, ArrowDown, Target, Award, BarChart2, PieChart,
   MessageCircle, Send, X, Archive, Home, Phone, Mail,
-  Wifi, WifiOff, Server, HardDrive, Globe, Lock, UserPlus, LogOut, FileDown
+  Wifi, WifiOff, Server, HardDrive, Globe, Lock, UserPlus, LogOut, FileDown, EyeOff
 } from 'lucide-react';
 
 // ─────────────────────────────────────────────
@@ -2621,6 +2621,7 @@ function AuthPage({ onLoginSuccess }){
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [name, setName] = useState('');
   const [policeCode, setPoliceCode] = useState('');
   const [error, setError] = useState('');
@@ -2775,7 +2776,31 @@ function AuthPage({ onLoginSuccess }){
 
               <div className="auth-inp-group">
                 <label className="auth-lbl">Password</label>
-                <input required type="password" className="auth-inp" placeholder="\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022" value={password} onChange={e=>setPassword(e.target.value)}/>
+                <div style={{position:'relative'}}>
+                  <input
+                    required
+                    type={showPassword ? 'text' : 'password'}
+                    className="auth-inp"
+                    placeholder="Enter your password"
+                    value={password}
+                    onChange={e=>setPassword(e.target.value)}
+                    style={{paddingRight:42}}
+                  />
+                  <button
+                    type="button"
+                    onClick={()=>setShowPassword(p=>!p)}
+                    style={{
+                      position:'absolute', right:12, top:'50%', transform:'translateY(-50%)',
+                      background:'none', border:'none', cursor:'pointer', padding:0,
+                      color:'#6b7280', display:'flex', alignItems:'center'
+                    }}
+                    title={showPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showPassword
+                      ? <Eye size={18} color="#60a5fa"/>
+                      : <EyeOff size={18} color="#6b7280"/>}
+                  </button>
+                </div>
               </div>
 
               {!isLogin && (
@@ -3025,7 +3050,7 @@ function CustomerPortalPage({ currentUser, onLogout, addToast }) {
       {/* Top header */}
       <div style={{ background:'rgba(16,185,129,0.06)', borderBottom:'1px solid rgba(16,185,129,0.15)', padding:'14px 24px', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
         <div>
-          <div style={{ fontSize:18, fontWeight:800, color:'#f3f4f6' }}>\ud83e\udde7 Traffic Fine Payment Portal</div>
+          <div style={{ fontSize:18, fontWeight:800, color:'#f3f4f6' }}>{'🧾'} Traffic Fine Payment Portal</div>
           <div style={{ fontSize:11, color:'#9ca3af', marginTop:2 }}>Reference: <strong style={{color:'#34d399'}}>{identifier}</strong></div>
         </div>
         <button className="btn btn-g" style={{display:'flex',alignItems:'center',gap:6}} onClick={onLogout}>
@@ -3053,11 +3078,11 @@ function CustomerPortalPage({ currentUser, onLogout, addToast }) {
             }}>
               <div>
                 <div style={{ fontSize:11, color:'#9ca3af', textTransform:'uppercase', fontWeight:700, letterSpacing:1, marginBottom:6 }}>Total Outstanding Fine</div>
-                <div style={{ fontSize:46, fontWeight:900, color:violations.length>0?'#f87171':'#34d399', fontFamily:'monospace', lineHeight:1 }}>\u20b9{totalFine.toLocaleString('en-IN')}</div>
+                <div style={{ fontSize:46, fontWeight:900, color:violations.length>0?'#f87171':'#34d399', fontFamily:'monospace', lineHeight:1 }}>{'₹'}{totalFine.toLocaleString('en-IN')}</div>
                 <div style={{ fontSize:12, color:'#9ca3af', marginTop:6 }}>
                   {violations.length>0
                     ? `${violations.length} unpaid challan${violations.length>1?'s':''} pending`
-                    : '\ud83c\udf89 All clear! No outstanding fines found.'}
+                    : '🎉 All clear! No outstanding fines found.'}
                 </div>
               </div>
               {registry && (
@@ -3067,7 +3092,7 @@ function CustomerPortalPage({ currentUser, onLogout, addToast }) {
                   <div style={{ fontSize:12, color:'#60a5fa', marginTop:3, fontFamily:'monospace' }}>{registry.plate}</div>
                   <div style={{ fontSize:11, color:'#9ca3af', marginTop:2 }}>{registry.brand} {registry.model} · {registry.vehicleType}</div>
                   <div style={{ marginTop:6, fontSize:10, fontWeight:700, color:registry.insuranceStatus==='Active'?'#34d399':'#f87171' }}>
-                    \ud83d\udee1\ufe0f Insurance: {registry.insuranceStatus}
+                    {'🛡️'} Insurance: {registry.insuranceStatus}
                   </div>
                 </div>
               )}
@@ -3078,12 +3103,12 @@ function CustomerPortalPage({ currentUser, onLogout, addToast }) {
               <div style={{ textAlign:'center', padding:'60px 20px', background:'rgba(16,185,129,0.04)', border:'1px solid rgba(16,185,129,0.15)', borderRadius:16 }}>
                 <CheckCircle size={56} color="#10b981" style={{ margin:'0 auto 14px' }}/>
                 <div style={{ fontSize:18, fontWeight:700, color:'#34d399', marginBottom:6 }}>No Pending Fines!</div>
-                <div style={{ fontSize:13, color:'#9ca3af' }}>No unpaid challans found for <strong>{identifier}</strong>. You are all clear \u2705</div>
+                <div style={{ fontSize:13, color:'#9ca3af' }}>No unpaid challans found for <strong>{identifier}</strong>. You are all clear {'✅'}</div>
               </div>
             ) : (
               <div>
                 <div style={{ fontSize:14, fontWeight:700, color:'#f3f4f6', marginBottom:14, display:'flex', alignItems:'center', gap:8 }}>
-                  \ud83e\udde7 Your Pending Challans
+                  {'🧾'} Your Pending Challans
                   <span style={{ fontSize:11, padding:'2px 10px', background:'rgba(239,68,68,0.12)', color:'#f87171', borderRadius:20, border:'1px solid rgba(239,68,68,0.2)' }}>
                     {violations.length} unpaid
                   </span>
@@ -3096,14 +3121,14 @@ function CustomerPortalPage({ currentUser, onLogout, addToast }) {
                         <span style={{ fontSize:10, padding:'2px 8px', background:'rgba(59,130,246,0.12)', color:'#60a5fa', border:'1px solid rgba(59,130,246,0.2)', borderRadius:4, fontFamily:'monospace' }}>{vio.licensePlate}</span>
                       </div>
                       <div style={{ fontSize:11, color:'#9ca3af', marginBottom:4 }}>
-                        \ud83d\udccd {typeof vio.location==='string' ? vio.location : (vio.location?.name||'Junction')} &nbsp;\u00b7&nbsp;
-                        \ud83d\udd50 {new Date(vio.detectedAt||vio.createdAt).toLocaleString('en-IN')}
+                        {'📍'} {typeof vio.location==='string' ? vio.location : (vio.location?.name||'Junction')} {' · '}
+                        {'🕐'} {new Date(vio.detectedAt||vio.createdAt).toLocaleString('en-IN')}
                       </div>
                       <div style={{ fontSize:10, color:'#6b7280' }}>Ref: <span style={{fontFamily:'monospace',color:'#4b5563'}}>{vio.violationId}</span></div>
                     </div>
                     <div style={{ textAlign:'right', flexShrink:0 }}>
                       <div style={{ fontSize:11, color:'#9ca3af', marginBottom:2 }}>Fine Amount</div>
-                      <div style={{ fontSize:26, fontWeight:800, color:'#f87171', fontFamily:'monospace' }}>\u20b9{(vio.fineAmount||0).toLocaleString('en-IN')}</div>
+                      <div style={{ fontSize:26, fontWeight:800, color:'#f87171', fontFamily:'monospace' }}>{'₹'}{(vio.fineAmount||0).toLocaleString('en-IN')}</div>
                       <button
                         onClick={() => { setPayItem(vio); setPaid(false); setPayMethod('upi'); }}
                         style={{
@@ -3113,7 +3138,7 @@ function CustomerPortalPage({ currentUser, onLogout, addToast }) {
                           fontWeight:700, fontSize:13, cursor:'pointer',
                           boxShadow:'0 4px 14px rgba(16,185,129,0.3)'
                         }}
-                      >\ud83d\udcb3 Pay Now</button>
+                      >{'💳'} Pay Now</button>
                     </div>
                   </div>
                 ))}
@@ -3123,7 +3148,7 @@ function CustomerPortalPage({ currentUser, onLogout, addToast }) {
             {/* Past paid history */}
             {allViolations.filter(v => v.status==='PAID').length > 0 && (
               <div style={{ marginTop:28 }}>
-                <div style={{ fontSize:13, fontWeight:700, color:'#6b7280', marginBottom:10 }}>\u2705 Payment History</div>
+                <div style={{ fontSize:13, fontWeight:700, color:'#6b7280', marginBottom:10 }}>{'✅'} Payment History</div>
                 {allViolations.filter(v => v.status==='PAID').map(vio => (
                   <div key={vio.violationId} style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'10px 16px', background:'rgba(16,185,129,0.03)', border:'1px solid rgba(16,185,129,0.1)', borderRadius:10, marginBottom:8 }}>
                     <div>
@@ -3131,7 +3156,7 @@ function CustomerPortalPage({ currentUser, onLogout, addToast }) {
                       <div style={{ fontSize:10, color:'#4b5563', marginTop:2 }}>{vio.licensePlate} · {new Date(vio.detectedAt||vio.createdAt).toLocaleDateString('en-IN')}</div>
                     </div>
                     <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-                      <span style={{ fontSize:14, fontWeight:700, color:'#4b5563', fontFamily:'monospace' }}>\u20b9{(vio.fineAmount||0).toLocaleString('en-IN')}</span>
+                      <span style={{ fontSize:14, fontWeight:700, color:'#4b5563', fontFamily:'monospace' }}>{'₹'}{(vio.fineAmount||0).toLocaleString('en-IN')}</span>
                       <span className="paid-badge">PAID ✓</span>
                     </div>
                   </div>
@@ -3152,18 +3177,18 @@ function CustomerPortalPage({ currentUser, onLogout, addToast }) {
             <button
               onClick={() => { if(!paying){ setPayItem(null); setPaid(false); } }}
               style={{ position:'absolute', top:14, right:14, background:'rgba(255,255,255,0.05)', border:'none', color:'#9ca3af', cursor:'pointer', borderRadius:6, padding:'4px 10px', fontSize:16, lineHeight:1 }}
-            >\u2715</button>
+            >{'✕'}</button>
 
             {paid ? (
               /* Success state */
               <div style={{ textAlign:'center', padding:'20px 0' }}>
-                <div style={{ fontSize:56, marginBottom:12 }}>\u2705</div>
+                <div style={{ fontSize:56, marginBottom:12 }}>{'✅'}</div>
                 <div style={{ fontSize:20, fontWeight:800, color:'#34d399', marginBottom:6 }}>Payment Successful!</div>
-                <div style={{ fontSize:13, color:'#9ca3af' }}>\u20b9{payItem.fineAmount.toLocaleString('en-IN')} has been received. Challan cleared.</div>
+                <div style={{ fontSize:13, color:'#9ca3af' }}>{'₹'}{payItem.fineAmount.toLocaleString('en-IN')} has been received. Challan cleared.</div>
               </div>
             ) : (
               <>
-                <div style={{ fontSize:17, fontWeight:800, color:'#f3f4f6', marginBottom:2 }}>\ud83d\udcb3 Pay Traffic Fine</div>
+                <div style={{ fontSize:17, fontWeight:800, color:'#f3f4f6', marginBottom:2 }}>{'💳'} Pay Traffic Fine</div>
                 <div style={{ fontSize:11, color:'#6b7280', marginBottom:20 }}>
                   Challan: <span style={{fontFamily:'monospace',color:'#9ca3af'}}>{payItem.violationId}</span> &nbsp;·&nbsp; {payItem.label}
                 </div>
@@ -3171,7 +3196,7 @@ function CustomerPortalPage({ currentUser, onLogout, addToast }) {
                 {/* Amount */}
                 <div style={{ textAlign:'center', marginBottom:20 }}>
                   <div style={{ fontSize:13, color:'#9ca3af', marginBottom:4 }}>Amount Due</div>
-                  <div style={{ fontSize:42, fontWeight:900, color:'#f87171', fontFamily:'monospace' }}>\u20b9{payItem.fineAmount.toLocaleString('en-IN')}</div>
+                  <div style={{ fontSize:42, fontWeight:900, color:'#f87171', fontFamily:'monospace' }}>{'₹'}{payItem.fineAmount.toLocaleString('en-IN')}</div>
                 </div>
 
                 {/* Payment method tabs */}
@@ -3179,9 +3204,9 @@ function CustomerPortalPage({ currentUser, onLogout, addToast }) {
                   <div style={{ fontSize:11, color:'#6b7280', fontWeight:700, marginBottom:8, textTransform:'uppercase', letterSpacing:.5 }}>Choose Payment Method</div>
                   <div style={{ display:'flex', gap:8 }}>
                     {[
-                      { id:'upi',        label:'\ud83d\udcf1 UPI / QR'      },
-                      { id:'card',       label:'\ud83d\udcb3 Card'           },
-                      { id:'netbanking', label:'\ud83c\udfe6 Net Banking'    }
+                      { id:'upi',        label:'📱 UPI / QR'     },
+                      { id:'card',       label:'💳 Card'          },
+                      { id:'netbanking', label:'🏦 Net Banking'   }
                     ].map(m => (
                       <button key={m.id} className={`pay-method-btn${payMethod===m.id?' active':''}`} onClick={() => setPayMethod(m.id)}>
                         {m.label}
@@ -3202,7 +3227,7 @@ function CustomerPortalPage({ currentUser, onLogout, addToast }) {
                     </div>
                     <div style={{ fontSize:12, color:'#9ca3af', marginBottom:6 }}>Scan with <strong>GPay, PhonePe, Paytm</strong> or any UPI app</div>
                     <div style={{ fontSize:11, color:'#6b7280', marginBottom:4 }}>UPI ID: <span style={{fontFamily:'monospace',color:'#60a5fa'}}>rikashks5616@oksbi</span></div>
-                    <div style={{ fontSize:10, color:'#4b5563' }}>Amount \u20b9{payItem.fineAmount} · Ref: {payItem.violationId}</div>
+                    <div style={{ fontSize:10, color:'#4b5563' }}>Amount {'₹'}{payItem.fineAmount} · Ref: {payItem.violationId}</div>
                   </div>
                 )}
 
@@ -3240,7 +3265,7 @@ function CustomerPortalPage({ currentUser, onLogout, addToast }) {
                           border:'1px solid rgba(255,255,255,0.08)', borderRadius:8,
                           color:'#9ca3af', fontSize:12, fontWeight:600, cursor:'pointer'
                         }}>
-                          \ud83c\udfe6 {bank}
+                          {'🏦'} {bank}
                         </button>
                       ))}
                     </div>
@@ -3265,7 +3290,7 @@ function CustomerPortalPage({ currentUser, onLogout, addToast }) {
                     boxShadow: paying ? 'none' : '0 4px 18px rgba(16,185,129,0.4)'
                   }}
                 >
-                  {paying ? <><div className="spin" style={{borderTopColor:'#fff'}}/> Processing...</> : `\u2705 Confirm Payment \u20b9${payItem.fineAmount.toLocaleString('en-IN')}`}
+                  {paying ? <><div className="spin" style={{borderTopColor:'#fff'}}/> Processing...</> : `✅ Confirm Payment ₹${payItem.fineAmount.toLocaleString('en-IN')}`}
                 </button>
                 <button
                   onClick={() => { setPayItem(null); setPaid(false); }}
