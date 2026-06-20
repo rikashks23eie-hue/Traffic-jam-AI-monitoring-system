@@ -2617,38 +2617,14 @@ function ContactPage(){
 // AUTH: LOGIN & SIGNUP PAGES (Split Layout)
 // ─────────────────────────────────────────────
 function AuthPage({ onLoginSuccess }){
-  const [authMode, setAuthMode] = useState('police'); // 'police', 'admin', 'citizen'
+  const [authMode, setAuthMode] = useState('police'); // 'police', 'admin'
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [policeCode, setPoliceCode] = useState('');
-  const [citizenInput, setCitizenInput] = useState('');
-  const [citizenPlate, setCitizenPlate] = useState('');
-  const [citizenPhone, setCitizenPhone] = useState('');
-  const [citizenSubMode, setCitizenSubMode] = useState('quick'); // 'quick', 'login', 'register'
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-
-  const handleCitizenQuickSubmit = (e) => {
-    e.preventDefault();
-    const val = citizenInput.trim().replace(/\s+/g, '');
-    if (!val) {
-      setError('Please enter a plate number or mobile number.');
-      return;
-    }
-    setError('');
-    // Detect if it's a phone number (10 digits) or plate number
-    const isPhone = /^\d{10}$/.test(val.replace(/^\+?91/, ''));
-    onLoginSuccess({
-      email: val,
-      role: 'customer',
-      name: 'Citizen User (Quick)',
-      plate: isPhone ? val : val.toUpperCase(),
-      phone: isPhone ? val : '',
-      vehicleNumber: isPhone ? '' : val.toUpperCase()
-    });
-  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -2656,11 +2632,8 @@ function AuthPage({ onLoginSuccess }){
     setLoading(true);
 
     let finalRole = authMode;
-    if (authMode === 'citizen') {
-      finalRole = 'customer';
-    }
 
-    if (!isLogin && authMode !== 'citizen') {
+    if (!isLogin) {
       if (finalRole === 'police' && policeCode.trim() !== 'TN-1234') {
         setError('Invalid Police Verification Code. Police signups must be verified with Code: TN-1234');
         setLoading(false);
@@ -2681,9 +2654,7 @@ function AuthPage({ onLoginSuccess }){
           password, 
           role: finalRole, 
           name, 
-          policeCode: authMode === 'citizen' ? undefined : policeCode,
-          phone: authMode === 'citizen' ? citizenPhone : undefined,
-          vehicleNumber: authMode === 'citizen' ? citizenPlate : undefined
+          policeCode
         };
 
     fetch(`${API}${endpoint}`, {
@@ -2742,12 +2713,11 @@ function AuthPage({ onLoginSuccess }){
       {/* Form panel on the right */}
       <div className="auth-panel-r">
         <div className="auth-form animate-slideup">
-          {/* Mode Switcher - 3 Tabs */}
+          {/* Mode Switcher - 2 Tabs */}
           <div style={{display: 'flex', gap: 6, marginBottom: 22, background: 'rgba(255, 255, 255, 0.02)', padding: 4, borderRadius: 10, border: '1px solid rgba(255, 255, 255, 0.05)'}}>
             {[
               { id: 'police', label: '👮 Police', color: '#3b82f6' },
-              { id: 'admin', label: '👑 Admin', color: '#a855f7' },
-              { id: 'citizen', label: '🚨 Rule Breakers', color: '#ef4444' }
+              { id: 'admin', label: '👑 Admin', color: '#a855f7' }
             ].map(tab => (
               <button 
                 key={tab.id}
@@ -2774,96 +2744,60 @@ function AuthPage({ onLoginSuccess }){
           <h2 style={{fontSize: 22, fontWeight: 800, color: '#f3f4f6', marginBottom: 6}}>
             {authMode === 'police' && (isLogin ? 'Officer Sign In' : 'Officer Sign Up')}
             {authMode === 'admin' && (isLogin ? 'Administrator Sign In' : 'Administrator Sign Up')}
-            {authMode === 'citizen' && '🚨 Rule Breaker Fine Lookup'}
           </h2>
           <p style={{fontSize: 12, color: '#9ca3af', marginBottom: 24}}>
             {authMode === 'police' && (isLogin ? 'Access the enforcement command center.' : 'Register a new verified police account.')}
             {authMode === 'admin' && (isLogin ? 'Sign in with system administrator privileges.' : 'Create a new administrative controller.')}
-            {authMode === 'citizen' && 'Enter your Phone Number or Vehicle Number to check and pay your traffic fines.'}
           </p>
 
           {error && <div className="alert a-err" style={{fontSize: 12, marginBottom: 16}}><AlertTriangle size={12}/>{error}</div>}
 
-          {authMode === 'citizen' && citizenSubMode === 'quick' ? (
-            <form onSubmit={handleCitizenQuickSubmit}>
+          {/* Standard Auth Form (Login or Signup) for Police and Admin */}
+          <form onSubmit={handleSubmit}>
+            {!isLogin && (
               <div className="auth-inp-group">
-                <label className="auth-lbl">Plate Number or Mobile Number</label>
-                <input required type="text" className="auth-inp" placeholder="e.g. KA03HA2903 or 9043475616" value={citizenInput} onChange={e=>setCitizenInput(e.target.value)}/>
+                <label className="auth-lbl">Full Name</label>
+                <input required type="text" className="auth-inp" placeholder="e.g. Srikash KS" value={name} onChange={e=>setName(e.target.value)}/>
               </div>
-              <button type="submit" className="btn btn-p" style={{width: '100%', justifyContent: 'center', padding: '11px 0', marginTop: 10}}>
-                Access Quick Portal 🔍
-              </button>
-              <div style={{marginTop: 20, textAlign: 'center', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: 16}}>
-                <span style={{fontSize: 11, color: '#6b7280'}}>Have a full account?</span>
-                <div style={{marginTop: 8, display: 'flex', gap: 10, justifyContent: 'center'}}>
-                  <button type="button" className="btn btn-g btn-xs" onClick={() => { setCitizenSubMode('login'); setError(''); }}>Log In</button>
-                  <button type="button" className="btn btn-g btn-xs" onClick={() => { setCitizenSubMode('register'); setError(''); setIsLogin(false); }}>Sign Up</button>
-                </div>
-              </div>
-            </form>
-          ) : (
-            /* Standard Auth Form (Login or Signup) for Police, Admin, and Citizen accounts */
-            <form onSubmit={handleSubmit}>
-              {!isLogin && (
-                <div className="auth-inp-group">
-                  <label className="auth-lbl">Full Name</label>
-                  <input required type="text" className="auth-inp" placeholder="e.g. Srikash KS" value={name} onChange={e=>setName(e.target.value)}/>
-                </div>
-              )}
-              
-              <div className="auth-inp-group">
-                <label className="auth-lbl">Email Address</label>
-                <input required type="email" className="auth-inp" placeholder="user@traffic.gov" value={email} onChange={e=>setEmail(e.target.value)}/>
-              </div>
-
-              <div className="auth-inp-group">
-                <label className="auth-lbl">Password</label>
-                <input required type="password" className="auth-inp" placeholder="••••••••" value={password} onChange={e=>setPassword(e.target.value)}/>
-              </div>
-
-              {!isLogin && authMode === 'citizen' && (
-                <>
-                  <div className="auth-inp-group">
-                    <label className="auth-lbl">Mobile Number (Notification Target)</label>
-                    <input required type="text" className="auth-inp" placeholder="e.g. +91 9043475616" value={citizenPhone} onChange={e=>setCitizenPhone(e.target.value)}/>
-                  </div>
-                  <div className="auth-inp-group">
-                    <label className="auth-lbl">Registered Vehicle Plate Number</label>
-                    <input required type="text" className="auth-inp" placeholder="e.g. KA03HA2903" value={citizenPlate} onChange={e=>setCitizenPlate(e.target.value)}/>
-                  </div>
-                </>
-              )}
-
-              {!isLogin && authMode !== 'citizen' && (
-                <div className="auth-inp-group">
-                  <label className="auth-lbl" style={{color: authMode === 'police' ? '#f97316' : '#c084fc'}}>
-                    {authMode === 'police' ? 'Police Verification Code (Code: TN-1234)' : 'Admin Security Code (Code: ADMIN-5616)'}
-                  </label>
-                  <input 
-                    required 
-                    type="text" 
-                    className="auth-inp" 
-                    style={{borderColor: authMode === 'police' ? '#f97316' : '#c084fc'}} 
-                    placeholder="Enter Security Verification Code" 
-                    value={policeCode} 
-                    onChange={e=>setPoliceCode(e.target.value)}
-                  />
-                </div>
-              )}
-
-              <button type="submit" className="btn btn-p" style={{width: '100%', justifyContent: 'center', padding: '11px 0', marginTop: 10}} disabled={loading}>
-                {loading ? <div className="spin"/> : isLogin ? 'Sign In Account' : 'Register Account'}
-              </button>
-            </form>
-          )}
-
-          {authMode !== 'citizen' && (
-            <div style={{marginTop: 24, textAlign: 'center'}}>
-              <button style={{background: 'transparent', border: 'none', color: '#60a5fa', cursor: 'pointer', fontSize: 12}} onClick={() => { setIsLogin(!isLogin); setError(''); }}>
-                {isLogin ? "Need a new account? Sign Up" : "Already registered? Log In"}
-              </button>
+            )}
+            
+            <div className="auth-inp-group">
+              <label className="auth-lbl">Email Address</label>
+              <input required type="email" className="auth-inp" placeholder="user@traffic.gov" value={email} onChange={e=>setEmail(e.target.value)}/>
             </div>
-          )}
+
+            <div className="auth-inp-group">
+              <label className="auth-lbl">Password</label>
+              <input required type="password" className="auth-inp" placeholder="••••••••" value={password} onChange={e=>setPassword(e.target.value)}/>
+            </div>
+
+            {!isLogin && (
+              <div className="auth-inp-group">
+                <label className="auth-lbl" style={{color: authMode === 'police' ? '#f97316' : '#c084fc'}}>
+                  {authMode === 'police' ? 'Police Verification Code (Code: TN-1234)' : 'Admin Security Code (Code: ADMIN-5616)'}
+                </label>
+                <input 
+                  required 
+                  type="text" 
+                  className="auth-inp" 
+                  style={{borderColor: authMode === 'police' ? '#f97316' : '#c084fc'}} 
+                  placeholder="Enter Security Verification Code" 
+                  value={policeCode} 
+                  onChange={e=>setPoliceCode(e.target.value)}
+                />
+              </div>
+            )}
+
+            <button type="submit" className="btn btn-p" style={{width: '100%', justifyContent: 'center', padding: '11px 0', marginTop: 10}} disabled={loading}>
+              {loading ? <div className="spin"/> : isLogin ? 'Sign In Account' : 'Register Account'}
+            </button>
+          </form>
+
+          <div style={{marginTop: 24, textAlign: 'center'}}>
+            <button style={{background: 'transparent', border: 'none', color: '#60a5fa', cursor: 'pointer', fontSize: 12}} onClick={() => { setIsLogin(!isLogin); setError(''); }}>
+              {isLogin ? "Need a new account? Sign Up" : "Already registered? Log In"}
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -2920,10 +2854,9 @@ function getVehicleFallbackDetails(plate) {
 }
 
 // ─────────────────────────────────────────────
+// (Rule Breakers portal removed)
 // ─────────────────────────────────────────────
-// PAGE: RULE BREAKERS CHALLAN PORTAL (REWRITTEN)
-// ─────────────────────────────────────────────
-function CustomerPortalPage({ currentUser, onLogout, addToast }) {
+function _RemovedCustomerPortalPage_unused() { // placeholder to avoid parse errors
   const [violations, setViolations] = useState([]);
   const [registry, setRegistry] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -3919,15 +3852,6 @@ export default function App(){
 
   if (!currentUser) {
     return <AuthPage onLoginSuccess={(user) => { setCurrentUser(user); addToast(`Welcome back, ${user.name}!`); }}/>;
-  }
-
-  if (currentUser.role === 'customer') {
-    return (
-      <>
-        <style>{CSS}</style>
-        <CustomerPortalPage currentUser={currentUser} onLogout={handleLogout} addToast={addToast} />
-      </>
-    );
   }
 
   const handleLogout = () => {
