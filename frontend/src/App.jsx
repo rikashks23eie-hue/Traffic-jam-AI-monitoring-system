@@ -2713,28 +2713,29 @@ function AuthPage({ onLoginSuccess }){
       {/* Form panel on the right */}
       <div className="auth-panel-r">
         <div className="auth-form animate-slideup">
-          {/* Mode Switcher - 2 Tabs */}
+          {/* Mode Switcher - 3 Tabs */}
           <div style={{display: 'flex', gap: 6, marginBottom: 22, background: 'rgba(255, 255, 255, 0.02)', padding: 4, borderRadius: 10, border: '1px solid rgba(255, 255, 255, 0.05)'}}>
             {[
-              { id: 'police', label: '👮 Police', color: '#3b82f6' },
-              { id: 'admin', label: '👑 Admin', color: '#a855f7' }
+              { id: 'police',   label: '\ud83d\udc6e\u200d Police',  color: '#3b82f6' },
+              { id: 'admin',    label: '\ud83d\udc51 Admin',   color: '#a855f7' },
+              { id: 'customer', label: '\ud83e\udde7 Pay Fine', color: '#10b981' }
             ].map(tab => (
-              <button 
+              <button
                 key={tab.id}
                 type="button"
                 style={{
-                  flex: 1, 
-                  padding: '9px 0', 
-                  fontSize: '11px', 
-                  fontWeight: 700, 
-                  borderRadius: 7, 
-                  border: 'none', 
+                  flex: 1,
+                  padding: '9px 0',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  borderRadius: 7,
+                  border: 'none',
                   cursor: 'pointer',
                   background: authMode === tab.id ? `linear-gradient(135deg, ${tab.color}, ${tab.color}bb)` : 'transparent',
                   color: authMode === tab.id ? '#fff' : '#6b7280',
                   transition: 'all 0.2s ease'
                 }}
-                onClick={() => { setAuthMode(tab.id); setError(''); setIsLogin(true); }}
+                onClick={() => { setAuthMode(tab.id); setError(''); }}
               >
                 {tab.label}
               </button>
@@ -2742,62 +2743,71 @@ function AuthPage({ onLoginSuccess }){
           </div>
 
           <h2 style={{fontSize: 22, fontWeight: 800, color: '#f3f4f6', marginBottom: 6}}>
-            {authMode === 'police' && (isLogin ? 'Officer Sign In' : 'Officer Sign Up')}
-            {authMode === 'admin' && (isLogin ? 'Administrator Sign In' : 'Administrator Sign Up')}
+            {authMode === 'police'   && (isLogin ? 'Officer Sign In' : 'Officer Sign Up')}
+            {authMode === 'admin'    && (isLogin ? 'Administrator Sign In' : 'Administrator Sign Up')}
+            {authMode === 'customer' && '\ud83e\udde7 Pay Your Traffic Fine'}
           </h2>
           <p style={{fontSize: 12, color: '#9ca3af', marginBottom: 24}}>
-            {authMode === 'police' && (isLogin ? 'Access the enforcement command center.' : 'Register a new verified police account.')}
-            {authMode === 'admin' && (isLogin ? 'Sign in with system administrator privileges.' : 'Create a new administrative controller.')}
+            {authMode === 'police'   && (isLogin ? 'Access the enforcement command center.' : 'Register a new verified police account.')}
+            {authMode === 'admin'    && (isLogin ? 'Sign in with system administrator privileges.' : 'Create a new administrative controller.')}
+            {authMode === 'customer' && 'Enter your Mobile Number or Vehicle Plate to view and pay outstanding fines.'}
           </p>
 
           {error && <div className="alert a-err" style={{fontSize: 12, marginBottom: 16}}><AlertTriangle size={12}/>{error}</div>}
 
-          {/* Standard Auth Form (Login or Signup) for Police and Admin */}
-          <form onSubmit={handleSubmit}>
-            {!isLogin && (
+          {/* Customer Fine Lookup — no account needed */}
+          {authMode === 'customer' ? (
+            <CustomerLookupForm onLoginSuccess={onLoginSuccess} error={error} setError={setError} />
+          ) : (
+            /* Standard Auth Form (Login or Signup) for Police and Admin */
+            <form onSubmit={handleSubmit}>
+              {!isLogin && (
+                <div className="auth-inp-group">
+                  <label className="auth-lbl">Full Name</label>
+                  <input required type="text" className="auth-inp" placeholder="e.g. Srikash KS" value={name} onChange={e=>setName(e.target.value)}/>
+                </div>
+              )}
+              
               <div className="auth-inp-group">
-                <label className="auth-lbl">Full Name</label>
-                <input required type="text" className="auth-inp" placeholder="e.g. Srikash KS" value={name} onChange={e=>setName(e.target.value)}/>
+                <label className="auth-lbl">Email Address</label>
+                <input required type="email" className="auth-inp" placeholder="user@traffic.gov" value={email} onChange={e=>setEmail(e.target.value)}/>
               </div>
-            )}
-            
-            <div className="auth-inp-group">
-              <label className="auth-lbl">Email Address</label>
-              <input required type="email" className="auth-inp" placeholder="user@traffic.gov" value={email} onChange={e=>setEmail(e.target.value)}/>
-            </div>
 
-            <div className="auth-inp-group">
-              <label className="auth-lbl">Password</label>
-              <input required type="password" className="auth-inp" placeholder="••••••••" value={password} onChange={e=>setPassword(e.target.value)}/>
-            </div>
-
-            {!isLogin && (
               <div className="auth-inp-group">
-                <label className="auth-lbl" style={{color: authMode === 'police' ? '#f97316' : '#c084fc'}}>
-                  {authMode === 'police' ? 'Police Verification Code (Code: TN-1234)' : 'Admin Security Code (Code: ADMIN-5616)'}
-                </label>
-                <input 
-                  required 
-                  type="text" 
-                  className="auth-inp" 
-                  style={{borderColor: authMode === 'police' ? '#f97316' : '#c084fc'}} 
-                  placeholder="Enter Security Verification Code" 
-                  value={policeCode} 
-                  onChange={e=>setPoliceCode(e.target.value)}
-                />
+                <label className="auth-lbl">Password</label>
+                <input required type="password" className="auth-inp" placeholder="\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022" value={password} onChange={e=>setPassword(e.target.value)}/>
               </div>
-            )}
 
-            <button type="submit" className="btn btn-p" style={{width: '100%', justifyContent: 'center', padding: '11px 0', marginTop: 10}} disabled={loading}>
-              {loading ? <div className="spin"/> : isLogin ? 'Sign In Account' : 'Register Account'}
-            </button>
-          </form>
+              {!isLogin && (
+                <div className="auth-inp-group">
+                  <label className="auth-lbl" style={{color: authMode === 'police' ? '#f97316' : '#c084fc'}}>
+                    {authMode === 'police' ? 'Police Verification Code (Code: TN-1234)' : 'Admin Security Code (Code: ADMIN-5616)'}
+                  </label>
+                  <input
+                    required
+                    type="text"
+                    className="auth-inp"
+                    style={{borderColor: authMode === 'police' ? '#f97316' : '#c084fc'}}
+                    placeholder="Enter Security Verification Code"
+                    value={policeCode}
+                    onChange={e=>setPoliceCode(e.target.value)}
+                  />
+                </div>
+              )}
 
-          <div style={{marginTop: 24, textAlign: 'center'}}>
-            <button style={{background: 'transparent', border: 'none', color: '#60a5fa', cursor: 'pointer', fontSize: 12}} onClick={() => { setIsLogin(!isLogin); setError(''); }}>
-              {isLogin ? "Need a new account? Sign Up" : "Already registered? Log In"}
-            </button>
-          </div>
+              <button type="submit" className="btn btn-p" style={{width: '100%', justifyContent: 'center', padding: '11px 0', marginTop: 10}} disabled={loading}>
+                {loading ? <div className="spin"/> : isLogin ? 'Sign In Account' : 'Register Account'}
+              </button>
+            </form>
+          )}
+
+          {authMode !== 'customer' && (
+            <div style={{marginTop: 24, textAlign: 'center'}}>
+              <button style={{background: 'transparent', border: 'none', color: '#60a5fa', cursor: 'pointer', fontSize: 12}} onClick={() => { setIsLogin(!isLogin); setError(''); }}>
+                {isLogin ? "Need a new account? Sign Up" : "Already registered? Log In"}
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -2805,7 +2815,95 @@ function AuthPage({ onLoginSuccess }){
 }
 
 // ─────────────────────────────────────────────
-// VEHICLE FALLBACK DETAILS GENERATOR
+// CUSTOMER LOOKUP FORM (used inside AuthPage)
+// ─────────────────────────────────────────────
+function CustomerLookupForm({ onLoginSuccess, error, setError }) {
+  const [identifier, setIdentifier] = useState('');
+  const [searching, setSearching] = useState(false);
+
+  const handleLookup = (e) => {
+    e.preventDefault();
+    const val = identifier.trim().replace(/\s+/g, '');
+    if (!val) {
+      setError('Please enter your Mobile Number or Vehicle Plate Number.');
+      return;
+    }
+    setError('');
+    setSearching(true);
+    // Detect phone vs plate — then immediately enter the portal
+    const isPhone = /^\d{10}$/.test(val.replace(/^\+?91/, ''));
+    setTimeout(() => {
+      setSearching(false);
+      onLoginSuccess({
+        email: val,
+        role: 'customer',
+        name: isPhone ? `Customer (${val})` : `Vehicle Owner (${val})`,
+        phone: isPhone ? val : '',
+        plate: isPhone ? '' : val.toUpperCase(),
+        vehicleNumber: isPhone ? '' : val.toUpperCase()
+      });
+    }, 600);
+  };
+
+  return (
+    <form onSubmit={handleLookup}>
+      {/* Info banner */}
+      <div style={{
+        background: 'rgba(16,185,129,0.06)',
+        border: '1px solid rgba(16,185,129,0.2)',
+        borderRadius: 10,
+        padding: '10px 14px',
+        marginBottom: 18,
+        fontSize: 11,
+        color: '#6ee7b7',
+        lineHeight: 1.6
+      }}>
+        <strong style={{color:'#34d399'}}>No account needed.</strong> Just enter your <strong>10-digit Mobile Number</strong> or your <strong>Vehicle Plate Number</strong> (e.g. KA03HA2903) to view fines issued against you.
+      </div>
+
+      <div className="auth-inp-group">
+        <label className="auth-lbl" style={{color:'#34d399'}}>Mobile Number or Vehicle Plate</label>
+        <input
+          required
+          type="text"
+          className="auth-inp"
+          style={{borderColor:'rgba(16,185,129,0.4)'}}
+          placeholder="e.g. 9043475616  or  KA03HA2903"
+          value={identifier}
+          onChange={e => { setIdentifier(e.target.value); setError(''); }}
+        />
+      </div>
+
+      <button
+        type="submit"
+        disabled={searching}
+        style={{
+          width: '100%',
+          padding: '12px 0',
+          marginTop: 4,
+          background: searching ? '#374151' : 'linear-gradient(135deg, #10b981, #059669)',
+          color: '#fff',
+          border: 'none',
+          borderRadius: 9,
+          fontWeight: 700,
+          fontSize: 14,
+          cursor: searching ? 'not-allowed' : 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 8,
+          transition: 'all 0.2s'
+        }}
+      >
+        {searching ? <><div className="spin" style={{borderTopColor:'#fff'}}/> Searching...</> : '\ud83d\udd0d Check My Fines'}
+      </button>
+
+      <div style={{marginTop:16, textAlign:'center', fontSize:11, color:'#4b5563'}}>
+        Your reference number is your <strong style={{color:'#6b7280'}}>registered mobile number</strong> or <strong style={{color:'#6b7280'}}>vehicle plate</strong> given to the police when the fine was issued.
+      </div>
+    </form>
+  );
+}
 // ─────────────────────────────────────────────
 function getVehicleFallbackDetails(plate) {
   const cleanPlate = (plate || '').toUpperCase().replace(/\s/g, '');
@@ -2854,158 +2952,187 @@ function getVehicleFallbackDetails(plate) {
 }
 
 // ─────────────────────────────────────────────
-// (Rule Breakers portal removed)
+// PAGE: CUSTOMER FINE PAYMENT PORTAL
 // ─────────────────────────────────────────────
-function _RemovedCustomerPortalPage_unused() { // placeholder to avoid parse errors
-  const [violations, setViolations] = useState([]);
-  const [registry, setRegistry] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [paymentModalItem, setPaymentModalItem] = useState(null);
-  const [paying, setPaying] = useState(false);
-  const hasFetchedRef = React.useRef(false);
+function CustomerPortalPage({ currentUser, onLogout, addToast }) {
+  const [violations, setViolations]     = useState([]);
+  const [allViolations, setAllViolations] = useState([]);
+  const [registry, setRegistry]         = useState(null);
+  const [loading, setLoading]           = useState(true);
+  const [payItem, setPayItem]           = useState(null);
+  const [paying, setPaying]             = useState(false);
+  const [payMethod, setPayMethod]       = useState('upi'); // 'upi' | 'card' | 'netbanking'
+  const [paid, setPaid]                 = useState(false);
 
-  const identifier = (currentUser.phone || currentUser.vehicleNumber || currentUser.plate || currentUser.email || '').trim().replace(/\s+/g, '');
-  const isPhone = /^\d{10}$/.test(identifier.replace(/^\+?91/, ''));
+  // Stable identifier derived from currentUser — never changes after mount
+  const identifier = (currentUser.phone || currentUser.plate || currentUser.vehicleNumber || currentUser.email || '').trim().replace(/\s+/g,'');
+  const isPhone    = /^\d{10}$/.test(identifier.replace(/^\+?91/,''));
 
   useEffect(() => {
-    if (!identifier) return;
+    if (!identifier) { setLoading(false); return; }
     setLoading(true);
-    hasFetchedRef.current = false;
 
     const vioUrl = isPhone
       ? `${API}/violations?phone=${encodeURIComponent(identifier)}`
       : `${API}/violations?plate=${encodeURIComponent(identifier.toUpperCase())}`;
-
     const regUrl = `${API}/registry/${encodeURIComponent(identifier)}`;
 
     Promise.all([
       fetch(vioUrl).then(r => r.json()).catch(() => ({ violations: [] })),
       fetch(regUrl).then(r => r.json()).catch(() => null)
     ]).then(([vioData, regData]) => {
-      const unpaid = (vioData?.violations || []).filter(v => v.status === 'SENT' || v.status === 'PENDING');
+      const all    = vioData?.violations || [];
+      const unpaid = all.filter(v => v.status === 'SENT' || v.status === 'PENDING');
+      setAllViolations(all);
       setViolations(unpaid);
-
-      if (regData?.success) {
-        setRegistry(regData.registry);
-      } else if (isPhone && unpaid.length > 0) {
-        // Try to fetch registry by plate from first violation
-        const firstPlate = unpaid[0].licensePlate;
-        fetch(`${API}/registry/${encodeURIComponent(firstPlate)}`)
-          .then(r => r.json())
-          .then(d => { if (d?.success) setRegistry(d.registry); })
-          .catch(() => null);
-      }
+      if (regData?.success) setRegistry(regData.registry);
       setLoading(false);
     }).catch(() => setLoading(false));
-  }, [identifier]);
+  }, [identifier]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const totalFine = violations.reduce((s, v) => s + (v.fineAmount || 0), 0);
-  const isChase = totalFine > 5000;
 
-  const executePayment = () => {
-    if (!paymentModalItem) return;
+  const confirmPayment = () => {
+    if (!payItem) return;
     setPaying(true);
-    fetch(`${API}/violations/${paymentModalItem.violationId}/pay`, { method: 'POST' })
+    fetch(`${API}/violations/${payItem.violationId}/pay`, { method: 'POST' })
       .then(r => r.json())
       .then(data => {
         setPaying(false);
-        if (data.success) {
-          addToast(`✅ Payment of ₹${paymentModalItem.fineAmount} successful! Case closed.`, 'success');
-          setPaymentModalItem(null);
-          setViolations(prev => prev.filter(v => v.violationId !== paymentModalItem.violationId));
+        if (data.success || data.message) {
+          setPaid(true);
+          addToast(`✅ ₹${payItem.fineAmount} payment successful!`, 'success');
+          setViolations(prev => prev.filter(v => v.violationId !== payItem.violationId));
+          setTimeout(() => { setPayItem(null); setPaid(false); }, 2500);
         } else {
-          addToast('Payment failed. Try again.', 'warning');
+          addToast('Payment failed. Please try again.', 'warning');
         }
       })
       .catch(() => { setPaying(false); addToast('Connection error. Try again.', 'warning'); });
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #0a0f1e 0%, #0f1b35 50%, #1a0a2e 100%)', padding: '0', fontFamily: 'Inter, sans-serif' }}>
-      {/* Header */}
-      <div style={{ background: 'rgba(239,68,68,0.08)', borderBottom: '1px solid rgba(239,68,68,0.2)', padding: '16px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+    <div style={{ minHeight:'100vh', background:'linear-gradient(135deg,#020b18 0%,#071428 50%,#0d0b20 100%)', fontFamily:'Inter,sans-serif' }}>
+      <style>{`
+        .pay-card { background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:14px; padding:20px; }
+        .pay-method-btn { flex:1; padding:10px 6px; border:1px solid rgba(255,255,255,0.1); border-radius:9px; background:rgba(255,255,255,0.03); color:#9ca3af; font-size:12px; font-weight:600; cursor:pointer; transition:all 0.2s; text-align:center; }
+        .pay-method-btn.active { border-color:#10b981; background:rgba(16,185,129,0.12); color:#34d399; }
+        .challan-card { background:rgba(255,255,255,0.02); border:1px solid rgba(239,68,68,0.15); border-radius:12px; padding:18px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; transition:border-color 0.2s; }
+        .challan-card:hover { border-color:rgba(239,68,68,0.35); }
+        .paid-badge { padding:3px 10px; background:rgba(16,185,129,0.12); border:1px solid rgba(16,185,129,0.25); border-radius:20px; color:#34d399; font-size:10px; font-weight:700; }
+      `}</style>
+
+      {/* Top header */}
+      <div style={{ background:'rgba(16,185,129,0.06)', borderBottom:'1px solid rgba(16,185,129,0.15)', padding:'14px 24px', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
         <div>
-          <div style={{ fontSize: 20, fontWeight: 800, color: '#f3f4f6', letterSpacing: '.5px' }}>🚨 RULE BREAKER FINE PORTAL</div>
-          <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 2 }}>Searched: <strong style={{ color: '#f87171' }}>{identifier}</strong></div>
+          <div style={{ fontSize:18, fontWeight:800, color:'#f3f4f6' }}>\ud83e\udde7 Traffic Fine Payment Portal</div>
+          <div style={{ fontSize:11, color:'#9ca3af', marginTop:2 }}>Reference: <strong style={{color:'#34d399'}}>{identifier}</strong></div>
         </div>
-        <button className="btn btn-g" onClick={onLogout}><LogOut size={14}/> Exit</button>
+        <button className="btn btn-g" style={{display:'flex',alignItems:'center',gap:6}} onClick={onLogout}>
+          <LogOut size={13}/> Exit
+        </button>
       </div>
 
-      <div style={{ maxWidth: 900, margin: '0 auto', padding: '24px 16px' }}>
+      <div style={{ maxWidth:920, margin:'0 auto', padding:'28px 16px' }}>
+
         {loading ? (
-          <div style={{ textAlign: 'center', padding: '80px 0' }}>
-            <div className="spin" style={{ margin: '0 auto 16px' }}/>
-            <div style={{ color: '#9ca3af', fontSize: 13 }}>Searching for fines linked to <strong style={{ color: '#f87171' }}>{identifier}</strong>...</div>
+          <div style={{ textAlign:'center', padding:'80px 0' }}>
+            <div className="spin" style={{ margin:'0 auto 16px', width:36, height:36, borderWidth:3, borderTopColor:'#10b981' }}/>
+            <div style={{ color:'#9ca3af' }}>Fetching fines for <strong style={{color:'#34d399'}}>{identifier}</strong>...</div>
           </div>
         ) : (
           <>
-            {/* Summary Banner */}
+            {/* Summary strip */}
             <div style={{
               background: violations.length > 0
-                ? 'linear-gradient(135deg, rgba(239,68,68,0.12), rgba(15,23,42,0.9))'
-                : 'linear-gradient(135deg, rgba(16,185,129,0.1), rgba(15,23,42,0.9))',
-              border: `1px solid ${violations.length > 0 ? '#ef4444' : '#10b981'}`,
-              borderRadius: 14, padding: '20px 24px', marginBottom: 20,
-              display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12
+                ? 'linear-gradient(135deg,rgba(239,68,68,0.1),rgba(10,15,30,0.95))'
+                : 'linear-gradient(135deg,rgba(16,185,129,0.08),rgba(10,15,30,0.95))',
+              border:`1px solid ${violations.length>0?'rgba(239,68,68,0.4)':'rgba(16,185,129,0.35)'}`,
+              borderRadius:16, padding:'22px 26px', marginBottom:24,
+              display:'flex', justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap:16
             }}>
               <div>
-                <div style={{ fontSize: 12, color: '#9ca3af', textTransform: 'uppercase', fontWeight: 700, marginBottom: 6 }}>Total Outstanding Fine</div>
-                <div style={{ fontSize: 42, fontWeight: 800, color: violations.length > 0 ? '#f87171' : '#34d399', fontFamily: 'monospace' }}>₹{totalFine.toLocaleString()}</div>
-                <div style={{ fontSize: 12, color: '#9ca3af', marginTop: 4 }}>
-                  {violations.length > 0 ? `${violations.length} active challan(s) pending payment` : '🎉 No outstanding fines! You are clear.'}
+                <div style={{ fontSize:11, color:'#9ca3af', textTransform:'uppercase', fontWeight:700, letterSpacing:1, marginBottom:6 }}>Total Outstanding Fine</div>
+                <div style={{ fontSize:46, fontWeight:900, color:violations.length>0?'#f87171':'#34d399', fontFamily:'monospace', lineHeight:1 }}>\u20b9{totalFine.toLocaleString('en-IN')}</div>
+                <div style={{ fontSize:12, color:'#9ca3af', marginTop:6 }}>
+                  {violations.length>0
+                    ? `${violations.length} unpaid challan${violations.length>1?'s':''} pending`
+                    : '\ud83c\udf89 All clear! No outstanding fines found.'}
                 </div>
-                {isChase && <div style={{ marginTop: 8, fontSize: 11, color: '#fca5a5', background: 'rgba(239,68,68,0.1)', padding: '4px 10px', borderRadius: 6, display: 'inline-block' }}>⚠️ Chase Category — 12% surcharge applied for balance over ₹5,000</div>}
               </div>
               {registry && (
-                <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10, padding: '12px 16px', minWidth: 200 }}>
-                  <div style={{ fontSize: 10, color: '#9ca3af', marginBottom: 6, textTransform: 'uppercase' }}>Vehicle Info</div>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: '#f3f4f6' }}>{registry.ownerName}</div>
-                  <div style={{ fontSize: 11, color: '#60a5fa', marginTop: 2 }}>{registry.plate}</div>
-                  <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 2 }}>{registry.brand} {registry.model}</div>
-                  <div style={{ fontSize: 10, color: registry.insuranceStatus === 'Active' ? '#34d399' : '#f87171', marginTop: 4, fontWeight: 600 }}>Insurance: {registry.insuranceStatus}</div>
+                <div style={{ background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:12, padding:'14px 18px', minWidth:200 }}>
+                  <div style={{ fontSize:10, color:'#6b7280', marginBottom:8, textTransform:'uppercase', letterSpacing:.5 }}>Registered Vehicle</div>
+                  <div style={{ fontSize:14, fontWeight:700, color:'#f3f4f6' }}>{registry.ownerName}</div>
+                  <div style={{ fontSize:12, color:'#60a5fa', marginTop:3, fontFamily:'monospace' }}>{registry.plate}</div>
+                  <div style={{ fontSize:11, color:'#9ca3af', marginTop:2 }}>{registry.brand} {registry.model} · {registry.vehicleType}</div>
+                  <div style={{ marginTop:6, fontSize:10, fontWeight:700, color:registry.insuranceStatus==='Active'?'#34d399':'#f87171' }}>
+                    \ud83d\udee1\ufe0f Insurance: {registry.insuranceStatus}
+                  </div>
                 </div>
               )}
             </div>
 
-            {/* Challans List */}
+            {/* Challan list */}
             {violations.length === 0 ? (
-              <div style={{ background: 'rgba(16,185,129,0.05)', border: '1px solid rgba(16,185,129,0.2)', borderRadius: 14, padding: '48px', textAlign: 'center' }}>
-                <CheckCircle size={48} color="#10b981" style={{ margin: '0 auto 12px', opacity: 0.8 }}/>
-                <div style={{ fontSize: 16, fontWeight: 700, color: '#34d399' }}>No Challans Found!</div>
-                <div style={{ fontSize: 12, color: '#9ca3af', marginTop: 6 }}>No pending fines found for <strong>{identifier}</strong>. You are all clear! ✅</div>
+              <div style={{ textAlign:'center', padding:'60px 20px', background:'rgba(16,185,129,0.04)', border:'1px solid rgba(16,185,129,0.15)', borderRadius:16 }}>
+                <CheckCircle size={56} color="#10b981" style={{ margin:'0 auto 14px' }}/>
+                <div style={{ fontSize:18, fontWeight:700, color:'#34d399', marginBottom:6 }}>No Pending Fines!</div>
+                <div style={{ fontSize:13, color:'#9ca3af' }}>No unpaid challans found for <strong>{identifier}</strong>. You are all clear \u2705</div>
               </div>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                <div style={{ fontSize: 13, fontWeight: 700, color: '#f3f4f6', marginBottom: 4 }}>🧾 Active Traffic Challans</div>
+              <div>
+                <div style={{ fontSize:14, fontWeight:700, color:'#f3f4f6', marginBottom:14, display:'flex', alignItems:'center', gap:8 }}>
+                  \ud83e\udde7 Your Pending Challans
+                  <span style={{ fontSize:11, padding:'2px 10px', background:'rgba(239,68,68,0.12)', color:'#f87171', borderRadius:20, border:'1px solid rgba(239,68,68,0.2)' }}>
+                    {violations.length} unpaid
+                  </span>
+                </div>
                 {violations.map(vio => (
-                  <div key={vio.violationId} style={{
-                    background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(239,68,68,0.15)',
-                    borderRadius: 12, padding: '16px', display: 'flex',
-                    justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12
-                  }}>
-                    <div style={{ flex: 1, minWidth: 200 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                        <span style={{ fontWeight: 700, fontSize: 14, color: '#f3f4f6' }}>{vio.label}</span>
-                        <span style={{ fontSize: 10, padding: '2px 8px', background: 'rgba(59,130,246,0.15)', color: '#60a5fa', borderRadius: 4, border: '1px solid rgba(59,130,246,0.2)', fontFamily: 'monospace' }}>{vio.licensePlate}</span>
+                  <div key={vio.violationId} className="challan-card">
+                    <div style={{ flex:1, minWidth:220 }}>
+                      <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:6, flexWrap:'wrap' }}>
+                        <span style={{ fontWeight:700, fontSize:14, color:'#f3f4f6' }}>{vio.label || vio.type}</span>
+                        <span style={{ fontSize:10, padding:'2px 8px', background:'rgba(59,130,246,0.12)', color:'#60a5fa', border:'1px solid rgba(59,130,246,0.2)', borderRadius:4, fontFamily:'monospace' }}>{vio.licensePlate}</span>
                       </div>
-                      <div style={{ fontSize: 11, color: '#9ca3af' }}>
-                        📍 {typeof vio.location === 'string' ? vio.location : (vio.location?.name || 'Junction')} &nbsp;·&nbsp;
-                        🕐 {new Date(vio.detectedAt || vio.createdAt).toLocaleString('en-IN')}
+                      <div style={{ fontSize:11, color:'#9ca3af', marginBottom:4 }}>
+                        \ud83d\udccd {typeof vio.location==='string' ? vio.location : (vio.location?.name||'Junction')} &nbsp;\u00b7&nbsp;
+                        \ud83d\udd50 {new Date(vio.detectedAt||vio.createdAt).toLocaleString('en-IN')}
                       </div>
-                      {vio.isEmergencyExempt && <div style={{ fontSize: 10, color: '#34d399', marginTop: 4 }}>🛡️ {vio.exemptReason}</div>}
+                      <div style={{ fontSize:10, color:'#6b7280' }}>Ref: <span style={{fontFamily:'monospace',color:'#4b5563'}}>{vio.violationId}</span></div>
                     </div>
-                    <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontSize: 11, color: '#9ca3af' }}>Fine Amount</div>
-                      <div style={{ fontSize: 22, fontWeight: 800, color: '#f87171', fontFamily: 'monospace' }}>₹{(vio.fineAmount || 0).toLocaleString()}</div>
-                      {vio.isChaseCategory && <div style={{ fontSize: 9, color: '#fca5a5' }}>+ 12% surcharge</div>}
+                    <div style={{ textAlign:'right', flexShrink:0 }}>
+                      <div style={{ fontSize:11, color:'#9ca3af', marginBottom:2 }}>Fine Amount</div>
+                      <div style={{ fontSize:26, fontWeight:800, color:'#f87171', fontFamily:'monospace' }}>\u20b9{(vio.fineAmount||0).toLocaleString('en-IN')}</div>
                       <button
-                        onClick={() => setPaymentModalItem(vio)}
+                        onClick={() => { setPayItem(vio); setPaid(false); setPayMethod('upi'); }}
                         style={{
-                          marginTop: 8, padding: '8px 18px', background: 'linear-gradient(135deg, #ef4444, #dc2626)',
-                          color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, fontSize: 13,
-                          cursor: 'pointer', transition: 'all 0.2s'
+                          marginTop:10, padding:'9px 22px',
+                          background:'linear-gradient(135deg,#10b981,#059669)',
+                          color:'#fff', border:'none', borderRadius:9,
+                          fontWeight:700, fontSize:13, cursor:'pointer',
+                          boxShadow:'0 4px 14px rgba(16,185,129,0.3)'
                         }}
-                      >💳 Pay Now</button>
+                      >\ud83d\udcb3 Pay Now</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Past paid history */}
+            {allViolations.filter(v => v.status==='PAID').length > 0 && (
+              <div style={{ marginTop:28 }}>
+                <div style={{ fontSize:13, fontWeight:700, color:'#6b7280', marginBottom:10 }}>\u2705 Payment History</div>
+                {allViolations.filter(v => v.status==='PAID').map(vio => (
+                  <div key={vio.violationId} style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'10px 16px', background:'rgba(16,185,129,0.03)', border:'1px solid rgba(16,185,129,0.1)', borderRadius:10, marginBottom:8 }}>
+                    <div>
+                      <div style={{ fontSize:12, fontWeight:600, color:'#6b7280' }}>{vio.label||vio.type}</div>
+                      <div style={{ fontSize:10, color:'#4b5563', marginTop:2 }}>{vio.licensePlate} · {new Date(vio.detectedAt||vio.createdAt).toLocaleDateString('en-IN')}</div>
+                    </div>
+                    <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+                      <span style={{ fontSize:14, fontWeight:700, color:'#4b5563', fontFamily:'monospace' }}>\u20b9{(vio.fineAmount||0).toLocaleString('en-IN')}</span>
+                      <span className="paid-badge">PAID ✓</span>
                     </div>
                   </div>
                 ))}
@@ -3015,48 +3142,138 @@ function _RemovedCustomerPortalPage_unused() { // placeholder to avoid parse err
         )}
       </div>
 
-      {/* Payment Modal */}
-      {paymentModalItem && (
-        <div style={{
-          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000
-        }} onClick={e => e.target === e.currentTarget && setPaymentModalItem(null)}>
-          <div style={{
-            background: '#0f1b35', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 16,
-            padding: '28px', maxWidth: 380, width: '90%', textAlign: 'center', position: 'relative'
-          }}>
-            <button onClick={() => setPaymentModalItem(null)} style={{
-              position: 'absolute', top: 12, right: 12, background: 'rgba(255,255,255,0.05)',
-              border: 'none', color: '#9ca3af', cursor: 'pointer', borderRadius: 6, padding: '4px 8px', fontSize: 14
-            }}>✕</button>
-
-            <div style={{ fontSize: 17, fontWeight: 800, color: '#f3f4f6', marginBottom: 4 }}>💳 Secure Fine Payment</div>
-            <div style={{ fontSize: 11, color: '#9ca3af', marginBottom: 20 }}>Challan: {paymentModalItem.violationId}</div>
-
-            <div style={{ background: '#fff', padding: 14, borderRadius: 10, display: 'inline-block', marginBottom: 14, border: '3px solid #ef4444' }}>
-              <img
-                src={`https://api.qrserver.com/v1/create-qr-code/?size=170x170&data=${encodeURIComponent(`upi://pay?pa=bengalurutraffic@upi&pn=BengaluruTraffic&am=${paymentModalItem.fineAmount}&tr=${paymentModalItem.violationId}`)}`}
-                alt="UPI QR" style={{ display: 'block', width: 170, height: 170 }}
-              />
-            </div>
-
-            <div style={{ fontSize: 12, color: '#cbd5e1', marginBottom: 4 }}>Scan with GPay, PhonePe, or Paytm</div>
-            <div style={{ fontSize: 13, color: '#9ca3af', marginBottom: 20 }}>Amount: <strong style={{ color: '#f87171', fontSize: 18 }}>₹{paymentModalItem.fineAmount.toLocaleString()}</strong></div>
-
+      {/* ── PAYMENT MODAL ── */}
+      {payItem && (
+        <div
+          style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.75)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:1000, padding:16 }}
+          onClick={e => { if(e.target===e.currentTarget && !paying) setPayItem(null); }}
+        >
+          <div style={{ background:'#0b1527', border:'1px solid rgba(16,185,129,0.25)', borderRadius:18, padding:28, maxWidth:420, width:'100%', position:'relative', boxShadow:'0 25px 60px rgba(0,0,0,0.6)' }}>
             <button
-              onClick={executePayment} disabled={paying}
-              style={{
-                width: '100%', padding: '12px 0', background: paying ? '#374151' : 'linear-gradient(135deg, #ef4444, #dc2626)',
-                color: '#fff', border: 'none', borderRadius: 10, fontWeight: 700, fontSize: 14,
-                cursor: paying ? 'not-allowed' : 'pointer', marginBottom: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8
-              }}
-            >
-              {paying ? <><div className="spin"/> Processing...</> : '✅ Confirm Payment Paid'}
-            </button>
-            <button onClick={() => setPaymentModalItem(null)} style={{
-              width: '100%', padding: '10px 0', background: 'rgba(255,255,255,0.05)',
-              color: '#9ca3af', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, cursor: 'pointer', fontSize: 13
-            }}>Cancel</button>
+              onClick={() => { if(!paying){ setPayItem(null); setPaid(false); } }}
+              style={{ position:'absolute', top:14, right:14, background:'rgba(255,255,255,0.05)', border:'none', color:'#9ca3af', cursor:'pointer', borderRadius:6, padding:'4px 10px', fontSize:16, lineHeight:1 }}
+            >\u2715</button>
+
+            {paid ? (
+              /* Success state */
+              <div style={{ textAlign:'center', padding:'20px 0' }}>
+                <div style={{ fontSize:56, marginBottom:12 }}>\u2705</div>
+                <div style={{ fontSize:20, fontWeight:800, color:'#34d399', marginBottom:6 }}>Payment Successful!</div>
+                <div style={{ fontSize:13, color:'#9ca3af' }}>\u20b9{payItem.fineAmount.toLocaleString('en-IN')} has been received. Challan cleared.</div>
+              </div>
+            ) : (
+              <>
+                <div style={{ fontSize:17, fontWeight:800, color:'#f3f4f6', marginBottom:2 }}>\ud83d\udcb3 Pay Traffic Fine</div>
+                <div style={{ fontSize:11, color:'#6b7280', marginBottom:20 }}>
+                  Challan: <span style={{fontFamily:'monospace',color:'#9ca3af'}}>{payItem.violationId}</span> &nbsp;·&nbsp; {payItem.label}
+                </div>
+
+                {/* Amount */}
+                <div style={{ textAlign:'center', marginBottom:20 }}>
+                  <div style={{ fontSize:13, color:'#9ca3af', marginBottom:4 }}>Amount Due</div>
+                  <div style={{ fontSize:42, fontWeight:900, color:'#f87171', fontFamily:'monospace' }}>\u20b9{payItem.fineAmount.toLocaleString('en-IN')}</div>
+                </div>
+
+                {/* Payment method tabs */}
+                <div style={{ marginBottom:18 }}>
+                  <div style={{ fontSize:11, color:'#6b7280', fontWeight:700, marginBottom:8, textTransform:'uppercase', letterSpacing:.5 }}>Choose Payment Method</div>
+                  <div style={{ display:'flex', gap:8 }}>
+                    {[
+                      { id:'upi',        label:'\ud83d\udcf1 UPI / QR'      },
+                      { id:'card',       label:'\ud83d\udcb3 Card'           },
+                      { id:'netbanking', label:'\ud83c\udfe6 Net Banking'    }
+                    ].map(m => (
+                      <button key={m.id} className={`pay-method-btn${payMethod===m.id?' active':''}`} onClick={() => setPayMethod(m.id)}>
+                        {m.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* UPI Method */}
+                {payMethod === 'upi' && (
+                  <div style={{ textAlign:'center' }}>
+                    <div style={{ background:'#fff', padding:14, borderRadius:12, display:'inline-block', border:'3px solid #10b981', marginBottom:12 }}>
+                      <img
+                        src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(`upi://pay?pa=rikashks5616@oksbi&pn=Traffic+Fine+Payment&am=${payItem.fineAmount}&tr=${payItem.violationId}&tn=Traffic+Fine+${payItem.violationId}`)}`}
+                        alt="UPI QR Code"
+                        style={{ display:'block', width:180, height:180 }}
+                      />
+                    </div>
+                    <div style={{ fontSize:12, color:'#9ca3af', marginBottom:6 }}>Scan with <strong>GPay, PhonePe, Paytm</strong> or any UPI app</div>
+                    <div style={{ fontSize:11, color:'#6b7280', marginBottom:4 }}>UPI ID: <span style={{fontFamily:'monospace',color:'#60a5fa'}}>rikashks5616@oksbi</span></div>
+                    <div style={{ fontSize:10, color:'#4b5563' }}>Amount \u20b9{payItem.fineAmount} · Ref: {payItem.violationId}</div>
+                  </div>
+                )}
+
+                {/* Card Method */}
+                {payMethod === 'card' && (
+                  <div>
+                    <div className="auth-inp-group">
+                      <label className="auth-lbl" style={{color:'#9ca3af'}}>Card Number</label>
+                      <input className="auth-inp" type="text" placeholder="1234 5678 9012 3456" maxLength={19}/>
+                    </div>
+                    <div style={{ display:'flex', gap:10 }}>
+                      <div className="auth-inp-group" style={{flex:1}}>
+                        <label className="auth-lbl" style={{color:'#9ca3af'}}>Expiry</label>
+                        <input className="auth-inp" type="text" placeholder="MM/YY" maxLength={5}/>
+                      </div>
+                      <div className="auth-inp-group" style={{flex:1}}>
+                        <label className="auth-lbl" style={{color:'#9ca3af'}}>CVV</label>
+                        <input className="auth-inp" type="password" placeholder="•••" maxLength={4}/>
+                      </div>
+                    </div>
+                    <div className="auth-inp-group">
+                      <label className="auth-lbl" style={{color:'#9ca3af'}}>Name on Card</label>
+                      <input className="auth-inp" type="text" placeholder="SRIKASH KS"/>
+                    </div>
+                  </div>
+                )}
+
+                {/* Net Banking Method */}
+                {payMethod === 'netbanking' && (
+                  <div>
+                    <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8, marginBottom:14 }}>
+                      {['SBI', 'HDFC', 'ICICI', 'Axis', 'Kotak', 'Other'].map(bank => (
+                        <button key={bank} style={{
+                          padding:'10px 8px', background:'rgba(255,255,255,0.03)',
+                          border:'1px solid rgba(255,255,255,0.08)', borderRadius:8,
+                          color:'#9ca3af', fontSize:12, fontWeight:600, cursor:'pointer'
+                        }}>
+                          \ud83c\udfe6 {bank}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="auth-inp-group">
+                      <label className="auth-lbl" style={{color:'#9ca3af'}}>Customer ID / User ID</label>
+                      <input className="auth-inp" type="text" placeholder="Your net banking user ID"/>
+                    </div>
+                  </div>
+                )}
+
+                <div style={{ height:1, background:'rgba(255,255,255,0.06)', margin:'18px 0 16px' }}/>
+
+                <button
+                  onClick={confirmPayment}
+                  disabled={paying}
+                  style={{
+                    width:'100%', padding:'13px 0',
+                    background: paying ? '#374151' : 'linear-gradient(135deg,#10b981,#059669)',
+                    color:'#fff', border:'none', borderRadius:10,
+                    fontWeight:700, fontSize:15, cursor: paying?'not-allowed':'pointer',
+                    marginBottom:8, display:'flex', alignItems:'center', justifyContent:'center', gap:8,
+                    boxShadow: paying ? 'none' : '0 4px 18px rgba(16,185,129,0.4)'
+                  }}
+                >
+                  {paying ? <><div className="spin" style={{borderTopColor:'#fff'}}/> Processing...</> : `\u2705 Confirm Payment \u20b9${payItem.fineAmount.toLocaleString('en-IN')}`}
+                </button>
+                <button
+                  onClick={() => { setPayItem(null); setPaid(false); }}
+                  disabled={paying}
+                  style={{ width:'100%', padding:'10px 0', background:'rgba(255,255,255,0.04)', color:'#6b7280', border:'1px solid rgba(255,255,255,0.08)', borderRadius:10, cursor:'pointer', fontSize:13 }}
+                >Cancel</button>
+              </>
+            )}
           </div>
         </div>
       )}
@@ -3851,7 +4068,16 @@ export default function App(){
   },[currentUser]);
 
   if (!currentUser) {
-    return <AuthPage onLoginSuccess={(user) => { setCurrentUser(user); addToast(`Welcome back, ${user.name}!`); }}/>;
+    return <AuthPage onLoginSuccess={(user) => { setCurrentUser(user); addToast(user.role==='customer' ? `Fine portal opened for ${user.email}` : `Welcome back, ${user.name}!`); }}/>;
+  }
+
+  if (currentUser.role === 'customer') {
+    return (
+      <>
+        <style>{CSS}</style>
+        <CustomerPortalPage currentUser={currentUser} onLogout={() => setCurrentUser(null)} addToast={addToast}/>
+      </>
+    );
   }
 
   const handleLogout = () => {
